@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>배역 선택</title>
+    <style>
+        body { font-family: sans-serif; padding: 50px; background: #f4f7f6; text-align: center; }
+        .card { background: white; padding: 30px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 320px; }
+        .role-option { margin: 15px; font-size: 20px; cursor: pointer; display: flex; align-items: center; text-align: left; }
+        button { background: #007bff; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 20px; width: 100%; font-weight: bold; }
+        input[type="radio"] { transform: scale(1.6); margin-right: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🎭 연습할 배역 선택</h2>
+        <p style="color: #666; font-size: 14px;">한 명의 배역만 선택할 수 있습니다.</p>
+        <form action="/practice" method="post">
+            <input type="hidden" name="filename" value="{{ filename }}">
+            <div style="max-height: 400px; overflow-y: auto; margin-top: 20px;">
+                {% for role in roles %}
+                    <label class="role-option">
+                        <input type="radio" name="role" value="{{ role }}" required> {{ role }}
+                    </label>
+                {% endfor %}
+            </div>
+            <button type="submit">연습 시작</button>
+        </form>
+    </div>
+</body>
+</html>

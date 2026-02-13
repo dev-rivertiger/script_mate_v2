@@ -205,3 +205,28 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Mac
+.DS_Store
+
+app.py
+NanumGothic.ttf
+preprocessing.py
+(최종)오감언쟁_연극패청년 신입기수공연_2602_numbering.txt

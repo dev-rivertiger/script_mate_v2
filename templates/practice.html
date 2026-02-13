@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Script Mate - 연습 중</title>
+    <style>
+        body { font-family: sans-serif; background: #bacee0; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .top-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }
+        .top-bar button { background: #222; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 80%; padding: 15px; border-radius: 15px; line-height: 1.5; font-size: 17px; }
+        .bot { align-self: flex-start; background: white; }
+        .user { align-self: flex-end; background: #fee500; }
+        .action { align-self: center; background: rgba(0,0,0,0.1); font-size: 14px; border-radius: 20px; padding: 5px 15px; }
+        .role-label { font-size: 16px; font-weight: 900; margin-bottom: 7px; display: block; color: #111; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 3px; }
+        .answer-box { margin-top: 10px; font-size: 15px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px; line-height: 1.4; }
+        .correct { color: #008000; font-weight: bold; }
+        .wrong { color: #d90000; }
+        .input-area { background: white; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #ccc; align-items: flex-end; }
+        textarea { flex: 1; height: 60px; font-size: 16px; padding: 12px; border-radius: 10px; border: 1px solid #ddd; resize: none; outline: none; }
+        .send-btn { padding: 0 25px; height: 60px; border-radius: 10px; border: none; background: #fee500; cursor: pointer; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <button onclick="location.href='/'">🏠 메인으로</button>
+    <div style="font-weight: bold;">{{ filename }}</div>
+</div>
+
+<div id="chat-window"></div>
+
+<div class="input-area">
+    <textarea id="userInput" placeholder="대사를 입력하세요 (숫자 입력 시 이동)"></textarea>
+    <button class="send-btn" onclick="handleInput()">전송</button>
+</div>
+
+<script>
+    const script = JSON.parse('{{ script | tojson | safe }}');
+    const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
+    
+    let currentIdx = 0;
+    let myTurnIdx = null;
+    let isComposing = false;
+
+    const inputEl = document.getElementById('userInput');
+    const chatWindow = document.getElementById('chat-window');
+
+    inputEl.addEventListener('compositionstart', () => isComposing = true);
+    inputEl.addEventListener('compositionend', () => isComposing = false);
+
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+            e.preventDefault();
+            handleInput();
+        }
+    });
+
+    function normalize(text) {
+        if (!text) return "";
+        return text.replace(/\([^)]*\)/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').trim();
+    }
+
+    function addMessage(text, type, role, idx, extra="") {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}${extra}`;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function showNext() {
+        while (currentIdx < script.length) {
+            const item = script[currentIdx];
+            const isMyTurn = myRoles.some(role => item.role.includes(role));
+            if (isMyTurn) {
+                myTurnIdx = currentIdx;
+                return;
+            }
+            const type = item.role === "(지문)" ? "action" : "bot";
+            addMessage(item.text, type, item.role, item.idx);
+            currentIdx++;
+        }
+    }
+
+    function handleInput() {
+        const rawVal = inputEl.value.trim();
+
+        // 1. [우선순위] 숫자 입력 시 해당 인덱스로 점프 (가장 먼저 체크)
+        if (/^\d+$/.test(rawVal)) {
+            jumpToIndex(parseInt(rawVal));
+            inputEl.value = "";
+            return;
+        }
+
+        // 현재 내 차례가 아니면 입력 무시
+        if (myTurnIdx === null) return;
+
+        const target = script[myTurnIdx];
+
+        // 2. 빈 엔터 입력 시 힌트(정답) 표시
+        if (!rawVal) {
+            const hintBox = `
+                <div class="answer-box wrong">
+                    💡 힌트 (정답): <br>
+                    <strong>${target.text}</strong>
+                </div>
+            `;
+            addMessage("(내 대사 확인)", 'user', target.role, target.idx, hintBox);
+            return;
+        }
+
+        // 3. 텍스트 입력 시 유사도 검사
+        const similarity = getSimilarity(normalize(rawVal), normalize(target.text));
+        const isCorrect = similarity >= 0.7;
+
+        let resultBox = "";
+        if (isCorrect) {
+            resultBox = `<div class="answer-box correct">✔ 정답입니다!</div>`;
+        } else {
+            resultBox = `
+                <div class="answer-box wrong">
+                    ❌ 틀렸습니다! <br>
+                    <strong>정답: ${target.text}</strong>
+                </div>
+            `;
+        }
+
+        addMessage(rawVal, 'user', target.role, target.idx, resultBox);
+        
+        if (isCorrect) {
+            inputEl.value = ''; // 정답일 때만 입력창 비움
+            currentIdx = myTurnIdx + 1;
+            myTurnIdx = null;
+            setTimeout(showNext, 300);
+        }
+    }
+
+    // 점프 함수 (이전 로직 유지)
+    function jumpToIndex(num) {
+        // script 내의 idx 값과 입력한 숫자가 일치하는 요소 찾기
+        const foundIndex = script.findIndex(item => parseInt(item.idx) === num);
+        if (foundIndex === -1) {
+            alert("해당 번호의 대사를 찾을 수 없습니다.");
+            return;
+        }
+
+        chatWindow.innerHTML = ''; // 화면 초기화
+        currentIdx = foundIndex;
+        myTurnIdx = null;
+        
+        // 타이머가 있다면 제거 (사용자님 코드 구조 반영)
+        if (typeof hintTimer !== 'undefined' && hintTimer) {
+            clearTimeout(hintTimer);
+            hintTimer = null;
+        }
+
+        showNext();
+    }
+
+    function getSimilarity(s1, s2) {
+        if (s1 === s2) return 1.0;
+        let longer = s1.length > s2.length ? s1 : s2;
+        let shorter = s1.length > s2.length ? s2 : s1;
+        if (longer.length === 0) return 1.0;
+        return (longer.length - editDistance(longer, shorter)) / longer.length;
+    }
+
+    function editDistance(s1, s2) {
+        let costs = [];
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i === 0) costs[j] = j;
+                else if (j > 0) {
+                    let newValue = costs[j - 1];
+                    if (s1.charAt(i - 1) !== s2.charAt(j - 1))
+                        newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                    costs[j - 1] = lastValue; lastValue = newValue;
+                }
+            }
+            if (i > 0) costs[s2.length] = lastValue;
+        }
+        return costs[s2.length];
+    }
+    showNext();
+</script>
+</body>
+</html>
