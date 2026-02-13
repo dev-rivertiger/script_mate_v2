@@ -4,3 +4,4 @@ pdfplumber
 python-docx
 jinja2
 python-multipart
+itsdangerous
