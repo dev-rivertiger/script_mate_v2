@@ -1,37 +1,205 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Script Mate - 연습 중</title>
     <style>
-        body { font-family: sans-serif; background: #bacee0; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        .top-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }
-        .top-bar button { background: #222; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 80%; padding: 15px; border-radius: 15px; line-height: 1.5; font-size: 17px; }
-        .bot { align-self: flex-start; background: white; }
-        .user { align-self: flex-end; background: #fee500; }
-        .action { align-self: center; background: rgba(0,0,0,0.1); font-size: 14px; border-radius: 20px; padding: 5px 15px; }
-        .role-label { font-size: 16px; font-weight: 900; margin-bottom: 7px; display: block; color: #111; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 3px; }
-        .answer-box { margin-top: 10px; font-size: 15px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px; line-height: 1.4; }
-        .correct { color: #008000; font-weight: bold; }
-        .wrong { color: #d90000; }
-        .input-area { background: white; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #ccc; align-items: flex-end; }
-        textarea { flex: 1; height: 60px; font-size: 16px; padding: 12px; border-radius: 10px; border: 1px solid #ddd; resize: none; outline: none; }
-        .send-btn { padding: 0 25px; height: 60px; border-radius: 10px; border: none; background: #fee500; cursor: pointer; font-weight: bold; font-size: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #bacee0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            height: 100dvh; /* 모바일 주소창 고려 */
+            overflow: hidden; /* 스크롤 방지 */
+            position: fixed; /* 모바일에서 화면 고정 */
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .top-bar { 
+            background: white; 
+            padding: 12px 16px; 
+            border-bottom: 2px solid #e0e0e0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .top-bar button { 
+            background: #222; 
+            color: white; 
+            border: none; 
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .top-bar .filename {
+            font-weight: bold;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 8px;
+        }
+        
+        #chat-window { 
+            flex: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .msg { 
+            max-width: 85%; 
+            padding: 14px 16px; 
+            border-radius: 18px; 
+            line-height: 1.6; 
+            font-size: 16px; /* 모바일에서 읽기 좋은 크기 */
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .bot { 
+            align-self: flex-start; 
+            background: white; 
+            border-bottom-left-radius: 4px;
+        }
+        
+        .user { 
+            align-self: flex-end; 
+            background: #fee500; 
+            border-bottom-right-radius: 4px;
+        }
+        
+        .action { 
+            align-self: center; 
+            background: rgba(0,0,0,0.08); 
+            font-size: 14px; 
+            border-radius: 20px; 
+            padding: 8px 16px;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .role-label { 
+            font-size: 13px; 
+            font-weight: 700; 
+            margin-bottom: 6px; 
+            display: block; 
+            color: #555; 
+            border-bottom: 1px solid rgba(0,0,0,0.08); 
+            padding-bottom: 4px;
+        }
+        
+        .answer-box { 
+            margin-top: 10px; 
+            font-size: 14px; 
+            border-top: 1px solid rgba(0,0,0,0.15); 
+            padding-top: 10px; 
+            line-height: 1.5;
+        }
+        
+        .correct { color: #00aa00; font-weight: bold; }
+        .wrong { color: #dd0000; }
+        
+        .input-area { 
+            background: white; 
+            padding: 12px; 
+            display: flex; 
+            gap: 8px; 
+            border-top: 2px solid #e0e0e0;
+            align-items: flex-end;
+            flex-shrink: 0;
+            position: sticky;
+            bottom: 0;
+        }
+        
+        textarea { 
+            flex: 1; 
+            min-height: 44px; /* 터치 친화적 */
+            max-height: 100px;
+            font-size: 16px; /* iOS 확대 방지 */
+            padding: 12px; 
+            border-radius: 12px; 
+            border: 1px solid #ddd; 
+            resize: none; 
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .send-btn, .next-btn { 
+            padding: 0 20px; 
+            height: 44px; 
+            border-radius: 12px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 15px;
+            white-space: nowrap;
+        }
+        
+        .send-btn {
+            background: #fee500;
+        }
+        
+        .next-btn {
+            background: #007bff;
+            color: white;
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 600px) {
+            .msg { font-size: 15px; }
+            .role-label { font-size: 12px; }
+            .answer-box { font-size: 13px; }
+        }
+        
+        /* 키보드 올라올 때 대응 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                height: -webkit-fill-available;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
-    <button onclick="location.href='/'">🏠 메인으로</button>
-    <div style="font-weight: bold;">{{ filename }}</div>
+    <button onclick="location.href='/'">🏠 메인</button>
+    <div class="filename">{{ filename }}</div>
 </div>
 
 <div id="chat-window"></div>
 
 <div class="input-area">
-    <textarea id="userInput" placeholder="대사를 입력하세요 (숫자 입력 시 이동)"></textarea>
-    <button class="send-btn" onclick="handleInput()">전송</button>
+    <textarea id="userInput" placeholder="대사 입력 (숫자로 이동)"></textarea>
+    <div class="btn-container">
+        <button class="send-btn" onclick="handleInput()">전송</button>
+        <button class="next-btn" onclick="skipToNext()">다음</button>
+    </div>
 </div>
 
 <script>
@@ -45,9 +213,11 @@
     const inputEl = document.getElementById('userInput');
     const chatWindow = document.getElementById('chat-window');
 
+    // 한글 입력 중 엔터 방지
     inputEl.addEventListener('compositionstart', () => isComposing = true);
     inputEl.addEventListener('compositionend', () => isComposing = false);
 
+    // 엔터키 처리
     inputEl.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
@@ -55,11 +225,13 @@
         }
     });
 
+    // 정규화 함수
     function normalize(text) {
         if (!text) return "";
-        return text.replace(/\([^)]*\)/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').trim();
+        return text.replace(/\([^)]*\)/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').toLowerCase().trim();
     }
 
+    // 메시지 추가
     function addMessage(text, type, role, idx, extra="") {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
@@ -68,32 +240,48 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
+    // 다음 내 차례까지 자동 진행
     function showNext() {
         while (currentIdx < script.length) {
             const item = script[currentIdx];
             const isMyTurn = myRoles.some(role => item.role.includes(role));
+            
             if (isMyTurn) {
                 myTurnIdx = currentIdx;
                 return;
             }
+            
             const type = item.role === "(지문)" ? "action" : "bot";
             addMessage(item.text, type, item.role, item.idx);
             currentIdx++;
         }
+        
+        // 모든 대사 끝
+        if (currentIdx >= script.length) {
+            const endDiv = document.createElement('div');
+            endDiv.className = 'msg action';
+            endDiv.innerHTML = '🎉 연습 완료!';
+            chatWindow.appendChild(endDiv);
+            myTurnIdx = null;
+        }
     }
 
+    // 입력 처리
     function handleInput() {
         const rawVal = inputEl.value.trim();
 
-        // 1. [우선순위] 숫자 입력 시 해당 인덱스로 점프 (가장 먼저 체크)
+        // 1. 숫자 입력 시 해당 인덱스로 점프
         if (/^\d+$/.test(rawVal)) {
             jumpToIndex(parseInt(rawVal));
             inputEl.value = "";
             return;
         }
 
-        // 현재 내 차례가 아니면 입력 무시
-        if (myTurnIdx === null) return;
+        // 현재 내 차례가 아니면 무시
+        if (myTurnIdx === null) {
+            inputEl.value = "";
+            return;
+        }
 
         const target = script[myTurnIdx];
 
@@ -115,11 +303,11 @@
 
         let resultBox = "";
         if (isCorrect) {
-            resultBox = `<div class="answer-box correct">✔ 정답입니다!</div>`;
+            resultBox = `<div class="answer-box correct">✓ 정답입니다!</div>`;
         } else {
             resultBox = `
                 <div class="answer-box wrong">
-                    ❌ 틀렸습니다! <br>
+                    ✗ 틀렸습니다! (유사도: ${(similarity * 100).toFixed(0)}%)<br>
                     <strong>정답: ${target.text}</strong>
                 </div>
             `;
@@ -128,35 +316,56 @@
         addMessage(rawVal, 'user', target.role, target.idx, resultBox);
         
         if (isCorrect) {
-            inputEl.value = ''; // 정답일 때만 입력창 비움
+            inputEl.value = '';
             currentIdx = myTurnIdx + 1;
             myTurnIdx = null;
             setTimeout(showNext, 300);
         }
     }
 
-    // 점프 함수 (이전 로직 유지)
+    // 다음 버튼 - 내 차례로 건너뛰기
+    function skipToNext() {
+        if (myTurnIdx !== null) {
+            // 현재 내 차례면 정답 표시하고 넘어가기
+            const target = script[myTurnIdx];
+            const hintBox = `<div class="answer-box">⏭️ 건너뛰기<br><strong>${target.text}</strong></div>`;
+            addMessage("(건너뛰기)", 'user', target.role, target.idx, hintBox);
+            
+            inputEl.value = '';
+            currentIdx = myTurnIdx + 1;
+            myTurnIdx = null;
+            setTimeout(showNext, 300);
+        } else {
+            // 내 차례 아니면 다음 내 차례 찾기
+            showNext();
+        }
+    }
+
+    // 특정 인덱스로 점프
     function jumpToIndex(num) {
         // script 내의 idx 값과 입력한 숫자가 일치하는 요소 찾기
         const foundIndex = script.findIndex(item => parseInt(item.idx) === num);
+        
         if (foundIndex === -1) {
-            alert("해당 번호의 대사를 찾을 수 없습니다.");
+            alert(`번호 ${num}을(를) 찾을 수 없습니다.`);
             return;
         }
 
-        chatWindow.innerHTML = ''; // 화면 초기화
+        // 화면 초기화
+        chatWindow.innerHTML = '';
         currentIdx = foundIndex;
         myTurnIdx = null;
         
-        // 타이머가 있다면 제거 (사용자님 코드 구조 반영)
-        if (typeof hintTimer !== 'undefined' && hintTimer) {
-            clearTimeout(hintTimer);
-            hintTimer = null;
-        }
-
+        // 액션 메시지 추가
+        const jumpDiv = document.createElement('div');
+        jumpDiv.className = 'msg action';
+        jumpDiv.innerHTML = `🚩 [${num}]번으로 이동`;
+        chatWindow.appendChild(jumpDiv);
+        
         showNext();
     }
 
+    // 유사도 계산
     function getSimilarity(s1, s2) {
         if (s1 === s2) return 1.0;
         let longer = s1.length > s2.length ? s1 : s2;
@@ -165,6 +374,7 @@
         return (longer.length - editDistance(longer, shorter)) / longer.length;
     }
 
+    // 편집 거리 계산
     function editDistance(s1, s2) {
         let costs = [];
         for (let i = 0; i <= s1.length; i++) {
@@ -175,14 +385,20 @@
                     let newValue = costs[j - 1];
                     if (s1.charAt(i - 1) !== s2.charAt(j - 1))
                         newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                    costs[j - 1] = lastValue; lastValue = newValue;
+                    costs[j - 1] = lastValue;
+                    lastValue = newValue;
                 }
             }
             if (i > 0) costs[s2.length] = lastValue;
         }
         return costs[s2.length];
     }
+
+    // 시작
     showNext();
+    
+    // 포커스 유지
+    inputEl.focus();
 </script>
 </body>
 </html>

@@ -1,29 +1,134 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>배역 선택</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>배역 선택 - Script Mate</title>
     <style>
-        body { font-family: sans-serif; padding: 50px; background: #f4f7f6; text-align: center; }
-        .card { background: white; padding: 30px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 320px; }
-        .role-option { margin: 15px; font-size: 20px; cursor: pointer; display: flex; align-items: center; text-align: left; }
-        button { background: #007bff; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 20px; width: 100%; font-weight: bold; }
-        input[type="radio"] { transform: scale(1.6); margin-right: 15px; cursor: pointer; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px; 
+            background: #f4f7f6; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        
+        .role-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 8px;
+        }
+        
+        .role-option { 
+            margin: 12px 0;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .role-option:hover {
+            background: #e9ecef;
+        }
+        
+        .role-option:has(input:checked) {
+            background: #e7f3ff;
+            border-color: #007bff;
+        }
+        
+        input[type="radio"] { 
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .role-name {
+            font-size: 16px;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        button { 
+            background: #007bff; 
+            color: white; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 600px) {
+            body { padding: 16px; }
+            .card { padding: 24px 20px; }
+            h2 { font-size: 22px; }
+            .role-name { font-size: 15px; }
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>🎭 연습할 배역 선택</h2>
-        <p style="color: #666; font-size: 14px;">한 명의 배역만 선택할 수 있습니다.</p>
+        <h2>🎭 배역 선택</h2>
+        <p class="subtitle">연습할 배역을 선택하세요</p>
+        
         <form action="/practice" method="post">
             <input type="hidden" name="filename" value="{{ filename }}">
-            <div style="max-height: 400px; overflow-y: auto; margin-top: 20px;">
+            
+            <div class="role-list">
                 {% for role in roles %}
                     <label class="role-option">
-                        <input type="radio" name="role" value="{{ role }}" required> {{ role }}
+                        <input type="radio" name="role" value="{{ role }}" required>
+                        <span class="role-name">{{ role }}</span>
                     </label>
                 {% endfor %}
             </div>
-            <button type="submit">연습 시작</button>
+            
+            <button type="submit">연습 시작하기</button>
         </form>
     </div>
 </body>
