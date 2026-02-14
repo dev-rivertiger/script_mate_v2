@@ -399,6 +399,21 @@
     
     // 포커스 유지
     inputEl.focus();
+    
+    // ============================================
+    // 새로고침 감지 - 홈으로 리다이렉트
+    // ============================================
+    // performance API로 새로고침 감지
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        // 새로고침된 경우 홈으로
+        window.location.href = '/';
+    }
+    
+    // 또는 페이지 이탈 시도 시 경고 (선택사항)
+    // window.addEventListener('beforeunload', function(e) {
+    //     e.preventDefault();
+    //     e.returnValue = '연습을 종료하시겠습니까?';
+    // });
 </script>
 </body>
 </html>
