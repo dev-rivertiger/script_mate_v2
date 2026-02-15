@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Script Mate - 전체 보기</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --font-size: 18px;
+            --message-delay: 500;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #bacee0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .top-bar { 
+            background: white; 
+            padding: 12px 16px; 
+            border-bottom: 2px solid #e0e0e0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 8px;
+        }
+        
+        .top-bar button { 
+            background: #222; 
+            color: white; 
+            border: none; 
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .top-bar .filename {
+            font-weight: bold;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 8px;
+            min-width: 0;
+        }
+        
+        #chat-window { 
+            flex: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .msg { 
+            max-width: 85%; 
+            padding: 14px 16px; 
+            border-radius: 18px; 
+            line-height: 1.6; 
+            font-size: var(--font-size, 18px);
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .msg.animate {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .bot { 
+            align-self: flex-start; 
+            background: white; 
+            border-bottom-left-radius: 4px;
+        }
+        
+        .user { 
+            align-self: flex-end; 
+            background: #fee500; 
+            border-bottom-right-radius: 4px;
+        }
+        
+        .action { 
+            align-self: center; 
+            background: rgba(0,0,0,0.08); 
+            font-size: var(--font-size, 18px);
+            border-radius: 20px; 
+            padding: 8px 16px;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .role-label { 
+            font-size: calc(var(--font-size, 18px) * 0.75);
+            font-weight: 700; 
+            margin-bottom: 6px; 
+            display: block; 
+            color: #555; 
+            border-bottom: 1px solid rgba(0,0,0,0.08); 
+            padding-bottom: 4px;
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            body {
+                height: -webkit-fill-available;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <button onclick="location.href='/'">🏠</button>
+    <div class="filename">📖 {{ filename }}</div>
+</div>
+
+<div id="chat-window"></div>
+
+<script>
+    const script = JSON.parse('{{ script | tojson | safe }}');
+    const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
+    const roleColors = JSON.parse('{{ colors | safe }}');
+    
+    let currentFontSize = 18;
+    let messageDelay = 500;
+
+    const chatWindow = document.getElementById('chat-window');
+
+    // 설정 불러오기
+    function loadSettings() {
+        const savedFontSize = localStorage.getItem('scriptMateFontSize');
+        if (savedFontSize) {
+            currentFontSize = parseInt(savedFontSize);
+        }
+        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
+        
+        const savedDelay = localStorage.getItem('scriptMateDelay');
+        if (savedDelay) {
+            messageDelay = parseInt(savedDelay);
+        }
+    }
+
+    loadSettings();
+
+    // 메시지 추가 (즉시 출력)
+    function addMessage(text, type, role, idx) {
+        const div = document.createElement('div');
+        div.className = `msg ${type} animate`; // 즉시 animate 클래스 추가
+        
+        // 배역별 색상 적용
+        if (roleColors[role]) {
+            div.style.background = roleColors[role];
+        }
+        
+        div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}`;
+        chatWindow.appendChild(div);
+    }
+
+    // 전체 대사 표시 (즉시 출력 - 애니메이션 없음)
+    function showAll() {
+        for (let i = 0; i < script.length; i++) {
+            const item = script[i];
+            
+            // 내 배역인지 확인
+            const isMyRole = myRoles.some(role => item.role.includes(role));
+            
+            let type;
+            if (item.role === "(지문)") {
+                type = "action";
+            } else if (isMyRole) {
+                type = "user";  // 내 배역은 오른쪽
+            } else {
+                type = "bot";   // 다른 배역은 왼쪽
+            }
+            
+            addMessage(item.text, type, item.role, item.idx);
+        }
+        
+        // 완료 메시지
+        const endDiv = document.createElement('div');
+        endDiv.className = 'msg action animate';
+        endDiv.innerHTML = '🎉 전체 보기 완료!';
+        chatWindow.appendChild(endDiv);
+    }
+
+    // 시작
+    showAll();
+    
+    // 새로고침 감지
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        window.location.href = '/';
+    }
+</script>
+</body>
+</html>

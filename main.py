@@ -8,8 +8,7 @@ from pathlib import Path
 
 app = FastAPI()
 
-# [보안] 세션 미들웨어 설정: 사용자별 독립적인 연습 환경 보장
-# 'secret_key'는 본인만 아는 랜덤한 문자열로 변경하세요.
+# [보안] 세션 미들웨어 설정
 app.add_middleware(SessionMiddleware, secret_key="script_mate_v2_2026_key_unique")
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -21,18 +20,16 @@ SCRIPT_DIR = os.path.join(BASE_DIR, "scripts")
 async def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
-# 2. 배역 선택 화면 (라디오 버튼 방식)
+# 2. 배역 선택 화면
 @app.get("/select", response_class=HTMLResponse)
-async def select_role(request: Request):
-    # scripts 폴더 존재 확인 및 파일 목록 가져오기
+async def select_role(request: Request, mode: str = "practice"):
     if not os.path.exists(SCRIPT_DIR):
         return HTMLResponse(f"에러: {SCRIPT_DIR} 폴더가 없습니다. 폴더를 생성하고 대본을 넣어주세요.")
 
     files = [f for f in os.listdir(SCRIPT_DIR) if f.endswith(".txt")]
     if not files:
-        return HTMLResponse("대본 파일.txt)이 scripts 폴더에 없습니다.")
+        return HTMLResponse("대본 파일(.txt)이 scripts 폴더에 없습니다.")
 
-    # 첫 번째 대본을 기준으로 배역 추출
     filename = files[0]
     file_path = os.path.join(SCRIPT_DIR, filename)
 
@@ -63,21 +60,21 @@ async def select_role(request: Request):
         "filename": filename
     })
 
-# 3. 연습 화면 (세션 데이터 반영)
+# 3. 연습 화면
 @app.post("/practice", response_class=HTMLResponse)
 async def practice(
     request: Request, 
     filename: str = Form(...), 
-    role: str = Form(...)  # select_role.html의 라디오 버튼 'name="role"'과 일치
+    role: str = Form(...),
+    mode: str = Form("practice"),
+    colors: str = Form("{}")
 ):
-    # 사용자의 선택 배역을 세션에 저장 (서버 측 사용자 구별)
     request.session["my_role"] = role
     request.session["filename"] = filename
 
     file_path = os.path.join(SCRIPT_DIR, filename)
     script_data = []
 
-    # 대본 데이터를 다시 읽어와서 전달
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             if line.strip():
@@ -95,9 +92,28 @@ async def practice(
                     "text": text
                 })
 
-    return templates.TemplateResponse("practice.html", {
+    # mode에 따라 다른 템플릿 사용
+    template_name = "view.html" if mode == "view" else "practice.html"
+    
+    return templates.TemplateResponse(template_name, {
         "request": request,
         "script": script_data,
-        "my_roles": [role], # JS 로직 호환성을 위해 리스트로 전달
-        "filename": filename
+        "my_roles": [role],
+        "filename": filename,
+        "mode": mode,
+        "colors": colors
     })
+
+# ============================================
+# 직접 실행 가능 (python main.py)
+# ============================================
+if __name__ == "__main__":
+    import uvicorn
+    print("=" * 60)
+    print("🎭 Script Mate 서버 시작!")
+    print("=" * 60)
+    print("브라우저: http://localhost:8000")
+    print("모바일: http://[컴퓨터IP]:8000")
+    print("종료: Ctrl + C")
+    print("=" * 60)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

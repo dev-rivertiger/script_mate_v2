@@ -56,6 +56,7 @@
             align-items: center;
             transition: all 0.2s;
             border: 2px solid transparent;
+            gap: 12px;
         }
         
         .role-option:hover {
@@ -70,7 +71,7 @@
         input[type="radio"] { 
             width: 20px;
             height: 20px;
-            margin-right: 12px;
+            margin-right: 0;
             cursor: pointer;
             flex-shrink: 0;
         }
@@ -79,6 +80,43 @@
             font-size: 16px;
             font-weight: 500;
             flex: 1;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: #666;
+        }
+        
+        .color-option.selected {
+            border-color: #007bff;
+            border-width: 3px;
+        }
+        
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            font-weight: bold;
+            font-size: 16px;
         }
         
         button { 
@@ -116,14 +154,25 @@
         <h2>🎭 배역 선택</h2>
         <p class="subtitle">연습할 배역을 선택하세요</p>
         
-        <form action="/practice" method="post">
+        <form action="/practice" method="post" id="roleForm">
             <input type="hidden" name="filename" value="{{ filename }}">
+            <input type="hidden" name="mode" id="modeInput" value="practice">
+            <input type="hidden" name="colors" id="colorsInput" value="">
             
             <div class="role-list">
                 {% for role in roles %}
                     <label class="role-option">
                         <input type="radio" name="role" value="{{ role }}" required>
                         <span class="role-name">{{ role }}</span>
+                        <div class="color-picker-wrapper">
+                            <div class="color-option" style="background: #ffffff;" data-role="{{ role }}" data-color="#ffffff" onclick="selectColor(event, '{{ role }}', '#ffffff')"></div>
+                            <div class="color-option" style="background: #ffe4e1;" data-role="{{ role }}" data-color="#ffe4e1" onclick="selectColor(event, '{{ role }}', '#ffe4e1')"></div>
+                            <div class="color-option" style="background: #fff4e6;" data-role="{{ role }}" data-color="#fff4e6" onclick="selectColor(event, '{{ role }}', '#fff4e6')"></div>
+                            <div class="color-option" style="background: #e6f7ff;" data-role="{{ role }}" data-color="#e6f7ff" onclick="selectColor(event, '{{ role }}', '#e6f7ff')"></div>
+                            <div class="color-option" style="background: #f0f5ff;" data-role="{{ role }}" data-color="#f0f5ff" onclick="selectColor(event, '{{ role }}', '#f0f5ff')"></div>
+                            <div class="color-option" style="background: #f6ffed;" data-role="{{ role }}" data-color="#f6ffed" onclick="selectColor(event, '{{ role }}', '#f6ffed')"></div>
+                            <div class="color-option" style="background: #fff0f6;" data-role="{{ role }}" data-color="#fff0f6" onclick="selectColor(event, '{{ role }}', '#fff0f6')"></div>
+                        </div>
                     </label>
                 {% endfor %}
             </div>
@@ -131,6 +180,47 @@
             <button type="submit">연습 시작하기</button>
         </form>
     </div>
+    
+    <script>
+        // URL에서 mode 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode') || 'practice';
+        document.getElementById('modeInput').value = mode;
+        
+        // 색상 저장 객체
+        const roleColors = {};
+        
+        // 색상 선택 함수
+        function selectColor(event, role, color) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 해당 배역의 모든 색상 버튼에서 selected 제거
+            document.querySelectorAll(`.color-option[data-role="${role}"]`).forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 클릭한 버튼에 selected 추가
+            event.currentTarget.classList.add('selected');
+            
+            // 색상 저장
+            roleColors[role] = color;
+            
+            // hidden input 업데이트
+            document.getElementById('colorsInput').value = JSON.stringify(roleColors);
+        }
+        
+        // 기본 색상 설정 (흰색)
+        {% for role in roles %}
+            roleColors['{{ role }}'] = '#ffffff';
+        {% endfor %}
+        document.getElementById('colorsInput').value = JSON.stringify(roleColors);
+        
+        // 첫 번째 색상 버튼 선택
+        document.querySelectorAll('.color-option[data-color="#ffffff"]').forEach(btn => {
+            btn.classList.add('selected');
+        });
+    </script>
 
     <script>
         // 새로고침 감지 - 홈으로 리다이렉트

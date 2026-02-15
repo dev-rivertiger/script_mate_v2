@@ -49,6 +49,7 @@
             font-weight: bold;
             transition: all 0.2s;
             width: 100%;
+            margin-top: 12px;
         }
 
         button:hover {
@@ -59,6 +60,18 @@
 
         button:active {
             transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: white !important;
+            color: #333 !important;
+            border: 2px solid #ddd !important;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9fa !important;
+            border-color: #007bff !important;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2) !important;
         }
 
         /* 모바일 최적화 */
@@ -75,7 +88,8 @@
 <div class="box">
     <h1>🎭 Script Mate</h1>
     <p>대본 리딩 연습을 시작하세요</p>
-    <button onclick="location.href='/select'">연습 시작</button>
+    <button onclick="location.href='/select?mode=view'">📖 전체 보기</button>
+    <button onclick="location.href='/select?mode=practice'" class="btn-secondary">✍️ 연습 하기</button>
 </div>
 
 </body>

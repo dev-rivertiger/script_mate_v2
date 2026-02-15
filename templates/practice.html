@@ -8,8 +8,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --font-size: 18px;
-            --message-delay: 500;
+            --font-size: 18px;  /* 기본 18px */
+            --message-delay: 500;  /* 기본 0.5초 */
         }
         
         body { 
@@ -18,10 +18,11 @@
             display: flex; 
             flex-direction: column; 
             height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            position: fixed;
+            height: 100dvh; /* 모바일 주소창 고려 */
+            overflow: hidden; /* 스크롤 방지 */
+            position: fixed; /* 모바일에서 화면 고정 */
             width: 100%;
+            -webkit-overflow-scrolling: touch;
         }
         
         .top-bar { 
@@ -32,90 +33,327 @@
             justify-content: space-between; 
             align-items: center;
             flex-shrink: 0;
+            position: sticky;
+            top: 0;
             z-index: 100;
             gap: 8px;
         }
         
         .top-bar button { 
-            background: #222; color: white; border: none; 
-            padding: 10px 16px; border-radius: 8px; 
-            cursor: pointer; font-size: 14px; font-weight: 600;
+            background: #222; 
+            color: white; 
+            border: none; 
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
         }
         
         .top-bar .filename {
-            font-weight: bold; font-size: 14px; flex: 1;
-            text-align: center; overflow: hidden; text-overflow: ellipsis;
-            white-space: nowrap; padding: 0 8px;
+            font-weight: bold;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 8px;
+            min-width: 0;
+        }
+        
+        /* 설정 버튼 */
+        .settings-btn {
+            background: #666 !important;
+            padding: 10px 12px !important;
+            font-size: 18px !important;
         }
         
         /* 설정 패널 */
-        .settings-btn { background: #666 !important; padding: 10px 12px !important; font-size: 18px !important; }
         .settings-panel {
-            position: fixed; top: 0; right: -100%; width: 300px; height: 100%;
-            background: white; box-shadow: -4px 0 12px rgba(0,0,0,0.2);
-            z-index: 200; transition: right 0.3s ease; overflow-y: auto;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            z-index: 200;
+            transition: right 0.3s ease;
+            overflow-y: auto;
         }
-        .settings-panel.open { right: 0; }
-        .settings-header { padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
-        .settings-content { padding: 24px; }
-        .setting-item { margin-bottom: 28px; }
-        .setting-label { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: block; }
-        .setting-value { font-size: 20px; font-weight: bold; color: #007bff; display: block; }
-        .setting-controls { display: flex; gap: 8px; }
-        .setting-btn { flex: 1; padding: 12px; background: #f0f0f0; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 199; display: none; }
-        .settings-overlay.show { display: block; }
-
-        /* 채팅창 최적화 */
+        
+        .settings-panel.open {
+            right: 0;
+        }
+        
+        .settings-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .settings-header h3 {
+            font-size: 18px;
+            margin: 0;
+        }
+        
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .settings-content {
+            padding: 24px;
+        }
+        
+        .setting-item {
+            margin-bottom: 28px;
+        }
+        
+        .setting-label {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+            color: #333;
+        }
+        
+        .setting-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 8px;
+            display: block;
+            transition: color 0.3s ease; /* 색상 변경 애니메이션 */
+        }
+        
+        .setting-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .setting-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .setting-btn:active {
+            background: #ddd;
+        }
+        
+        /* 오버레이 */
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+            display: none;
+        }
+        
+        .settings-overlay.show {
+            display: block;
+        }
+        
         #chat-window { 
             flex: 1; 
             overflow-y: auto; 
+            overflow-x: hidden;
             padding: 16px; 
             display: flex; 
             flex-direction: column; 
             gap: 12px;
-            /* 모바일 부드러운 스크롤 */
             -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
-            overscroll-behavior-y: contain;
         }
         
         .msg { 
-            max-width: 85%; padding: 14px 16px; border-radius: 18px; 
-            line-height: 1.6; font-size: var(--font-size, 16px);
-            word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            opacity: 0; transform: translateY(10px);
+            max-width: 85%; 
+            padding: 14px 16px; 
+            border-radius: 18px; 
+            line-height: 1.6; 
+            font-size: var(--font-size, 16px); /* 동적 폰트 크기 */
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(10px);
         }
         
-        .msg.animate { animation: slideIn 0.3s ease-out forwards; }
-        @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+        /* 애니메이션 클래스 */
+        .msg.animate {
+            animation: slideIn 0.4s ease-out forwards;
+        }
         
-        .bot { align-self: flex-start; background: white; border-bottom-left-radius: 4px; }
-        .user { align-self: flex-end; background: #fee500; border-bottom-right-radius: 4px; }
-        .action { align-self: center; background: rgba(0,0,0,0.08); border-radius: 20px; padding: 8px 16px; text-align: center; }
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
-        .role-label { font-size: 0.8em; font-weight: 700; color: #555; display: block; margin-bottom: 4px; }
-        .answer-box { margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; }
+        .bot { 
+            align-self: flex-start; 
+            background: white; 
+            border-bottom-left-radius: 4px;
+        }
+        
+        .user { 
+            align-self: flex-end; 
+            background: #fee500; 
+            border-bottom-right-radius: 4px;
+        }
+        
+        .action { 
+            align-self: center; 
+            background: rgba(0,0,0,0.08); 
+            font-size: var(--font-size, 18px); /* 지문도 동일 크기 */
+            border-radius: 20px; 
+            padding: 8px 16px;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .role-label { 
+            font-size: calc(var(--font-size, 18px) * 0.75); /* 폰트의 75% 크기 */
+            font-weight: 700; 
+            margin-bottom: 6px; 
+            display: block; 
+            color: #555; 
+            border-bottom: 1px solid rgba(0,0,0,0.08); 
+            padding-bottom: 4px;
+        }
+        
+        .answer-box { 
+            margin-top: 10px; 
+            font-size: calc(var(--font-size, 18px) * 0.85); /* 폰트의 85% 크기 */
+            border-top: 1px solid rgba(0,0,0,0.15); 
+            padding-top: 10px; 
+            line-height: 1.5;
+        }
+        
         .correct { color: #00aa00; font-weight: bold; }
         .wrong { color: #dd0000; }
-
-        /* 입력 영역 */
+        
         .input-area { 
-            background: white; padding: 12px; display: flex; gap: 8px; 
-            border-top: 2px solid #e0e0e0; align-items: flex-end; flex-shrink: 0;
+            background: white; 
+            padding: 12px; 
+            display: flex; 
+            gap: 8px; 
+            border-top: 2px solid #e0e0e0;
+            align-items: flex-end;
+            flex-shrink: 0;
+            position: sticky;
+            bottom: 0;
         }
-        .input-wrapper { flex: 1; position: relative; }
+        
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
         textarea { 
-            width: 100%; min-height: 44px; max-height: 100px; font-size: 16px; 
-            padding: 12px 35px 12px 12px; border-radius: 12px; border: 1px solid #ddd; 
-            resize: none; outline: none;
+            flex: 1;
+            width: 100%;
+            min-height: 44px; /* 터치 친화적 */
+            max-height: 100px;
+            font-size: 16px; /* iOS 확대 방지 */
+            padding: 12px 40px 12px 12px; /* 오른쪽에 X 버튼 공간 */
+            border-radius: 12px; 
+            border: 1px solid #ddd; 
+            resize: none; 
+            outline: none;
+            font-family: inherit;
         }
-        .clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #ccc; border: none; color: white; display: none; align-items: center; justify-content: center; font-size: 12px; }
-        .clear-btn.show { display: flex; }
-        .btn-container { display: flex; flex-direction: column; gap: 6px; }
-        .send-btn, .next-btn { padding: 0 20px; height: 44px; border-radius: 12px; border: none; font-weight: bold; }
-        .send-btn { background: #fee500; }
-        .next-btn { background: #007bff; color: white; }
+        
+        .clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ccc;
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            line-height: 1;
+            padding: 0;
+            transition: background 0.2s;
+        }
+        
+        .clear-btn:hover {
+            background: #999;
+        }
+        
+        .clear-btn:active {
+            background: #666;
+        }
+        
+        .clear-btn.show {
+            display: flex;
+        }
+        
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .send-btn, .next-btn { 
+            padding: 0 20px; 
+            height: 44px; 
+            border-radius: 12px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 15px;
+            white-space: nowrap;
+        }
+        
+        .send-btn {
+            background: #fee500;
+        }
+        
+        .next-btn {
+            background: #007bff;
+            color: white;
+        }
+        
+        /* 키보드 올라올 때 대응 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                height: -webkit-fill-available;
+            }
+        }
     </style>
 </head>
 <body>
@@ -126,30 +364,46 @@
     <button class="settings-btn" onclick="toggleSettings()">☰</button>
 </div>
 
+<!-- 설정 오버레이 -->
 <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+
+<!-- 설정 패널 -->
 <div class="settings-panel" id="settingsPanel">
     <div class="settings-header">
         <h3>⚙️ 설정</h3>
-        <button onclick="toggleSettings()" style="background:none; color:#666; font-size:20px;">✕</button>
+        <button class="close-settings" onclick="toggleSettings()">✕</button>
     </div>
     <div class="settings-content">
+        <!-- 대사 속도 -->
         <div class="setting-item">
             <label class="setting-label">대사 속도</label>
             <span class="setting-value" id="speedValue">0.5초</span>
             <div class="setting-controls">
-                <button class="setting-btn" onclick="changeSpeed(-1)">빠르게 +</button>
-                <button class="setting-btn" onclick="changeSpeed(1)">느리게 -</button>
+                <button class="setting-btn" onclick="changeSpeed(-1); event.stopPropagation();">빠르게 -</button>
+                <button class="setting-btn" onclick="changeSpeed(1); event.stopPropagation();">느리게 +</button>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                범위: 0.2초 ~ 2.0초
             </div>
         </div>
+        
+        <!-- 폰트 크기 -->
         <div class="setting-item">
             <label class="setting-label">폰트 크기</label>
             <span class="setting-value" id="fontValue">18px</span>
             <div class="setting-controls">
-                <button class="setting-btn" onclick="changeFontSize(-2)">A-</button>
-                <button class="setting-btn" onclick="changeFontSize(2)">A+</button>
+                <button class="setting-btn" onclick="changeFontSize(-2); event.stopPropagation();">A-</button>
+                <button class="setting-btn" onclick="changeFontSize(2); event.stopPropagation();">A+</button>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                범위: 12px ~ 28px
             </div>
         </div>
-        <button class="setting-btn" onclick="resetSettings()" style="width: 100%; background: #fee500; margin-top: 20px;">🔄 초기화</button>
+        
+        <!-- 초기화 버튼 -->
+        <button class="setting-btn" onclick="resetSettings(); event.stopPropagation();" style="width: 100%; background: #fee500; margin-top: 20px;">
+            🔄 기본값으로 초기화
+        </button>
     </div>
 </div>
 
@@ -157,7 +411,7 @@
 
 <div class="input-area">
     <div class="input-wrapper">
-        <textarea id="userInput" placeholder="대사 입력"></textarea>
+        <textarea id="userInput" placeholder="대사 입력 (숫자로 이동)"></textarea>
         <button class="clear-btn" id="clearBtn" onclick="clearInput()">✕</button>
     </div>
     <div class="btn-container">
@@ -169,124 +423,340 @@
 <script>
     const script = JSON.parse('{{ script | tojson | safe }}');
     const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
+    const roleColors = JSON.parse('{{ colors | safe }}');
     
     let currentIdx = 0;
     let myTurnIdx = null;
     let isComposing = false;
-    let currentFontSize = 18;
-    let messageDelay = 500;
+    let currentFontSize = 18; // 기본 18px
+    let messageDelay = 500; // 기본 0.5초 (밀리초)
 
     const inputEl = document.getElementById('userInput');
     const chatWindow = document.getElementById('chat-window');
     const clearBtn = document.getElementById('clearBtn');
 
-    // 설정 관리
+    // ============================================
+    // 설정 불러오기 및 적용
+    // ============================================
     function loadSettings() {
-        currentFontSize = parseInt(localStorage.getItem('scriptMateFontSize')) || 18;
-        messageDelay = parseInt(localStorage.getItem('scriptMateDelay')) || 500;
-        applySettings();
-    }
-
-    function applySettings() {
+        // 폰트 크기
+        const savedFontSize = localStorage.getItem('scriptMateFontSize');
+        if (savedFontSize) {
+            currentFontSize = parseInt(savedFontSize);
+        }
         document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
-        document.getElementById('fontValue').textContent = currentFontSize + 'px';
-        document.getElementById('speedValue').textContent = (messageDelay / 1000).toFixed(1) + '초';
+        updateFontDisplay();
+        
+        // 대사 속도
+        const savedDelay = localStorage.getItem('scriptMateDelay');
+        if (savedDelay) {
+            messageDelay = parseInt(savedDelay);
+        }
+        document.documentElement.style.setProperty('--message-delay', messageDelay);
+        updateSpeedDisplay();
     }
 
+    // 설정 패널 토글
     function toggleSettings() {
-        document.getElementById('settingsPanel').classList.toggle('open');
-        document.getElementById('settingsOverlay').classList.toggle('show');
+        const panel = document.getElementById('settingsPanel');
+        const overlay = document.getElementById('settingsOverlay');
+        
+        if (panel.classList.contains('open')) {
+            panel.classList.remove('open');
+            overlay.classList.remove('show');
+        } else {
+            panel.classList.add('open');
+            overlay.classList.add('show');
+        }
     }
 
+    // 대사 속도 변경
     function changeSpeed(delta) {
-        messageDelay = Math.min(Math.max(messageDelay + delta * 100, 200), 2000);
+        messageDelay += delta * 100; // 100ms 단위 (delta는 1 또는 -1)
+        
+        // 범위: 0.2초 ~ 2.0초
+        if (messageDelay < 200) messageDelay = 200;
+        if (messageDelay > 2000) messageDelay = 2000;
+        
+        // 저장 및 표시 업데이트
         localStorage.setItem('scriptMateDelay', messageDelay);
-        applySettings();
+        updateSpeedDisplay();
+        
+        // 즉시 피드백 (배경색 변경)
+        const speedValue = document.getElementById('speedValue');
+        speedValue.style.color = '#00aa00';
+        setTimeout(() => {
+            speedValue.style.color = '#007bff';
+        }, 300);
+        
+        console.log('속도 변경:', messageDelay + 'ms'); // 디버깅용
     }
 
+    // 속도 표시 업데이트
+    function updateSpeedDisplay() {
+        const seconds = (messageDelay / 1000).toFixed(1);
+        document.getElementById('speedValue').textContent = seconds + '초';
+    }
+
+    // 폰트 크기 변경
     function changeFontSize(delta) {
-        currentFontSize = Math.min(Math.max(currentFontSize + delta, 12), 28);
+        currentFontSize += delta;
+        
+        // 범위: 12px ~ 28px
+        if (currentFontSize < 12) currentFontSize = 12;
+        if (currentFontSize > 28) currentFontSize = 28;
+        
+        // CSS 변수 업데이트 (모든 요소에 즉시 적용)
+        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
+        
+        // 저장 및 표시 업데이트
         localStorage.setItem('scriptMateFontSize', currentFontSize);
-        applySettings();
+        updateFontDisplay();
+        
+        // 즉시 피드백 (배경색 변경)
+        const fontValue = document.getElementById('fontValue');
+        fontValue.style.color = '#00aa00';
+        setTimeout(() => {
+            fontValue.style.color = '#007bff';
+        }, 300);
+        
+        console.log('폰트 크기 변경:', currentFontSize + 'px'); // 디버깅용
     }
 
+    // 폰트 표시 업데이트
+    function updateFontDisplay() {
+        document.getElementById('fontValue').textContent = currentFontSize + 'px';
+    }
+
+    // 설정 초기화
     function resetSettings() {
-        currentFontSize = 18; messageDelay = 500;
-        localStorage.clear();
-        applySettings();
+        currentFontSize = 18;
+        messageDelay = 500;
+        
+        document.documentElement.style.setProperty('--font-size', '18px');
+        localStorage.setItem('scriptMateFontSize', '18');
+        localStorage.setItem('scriptMateDelay', '500');
+        
+        updateFontDisplay();
+        updateSpeedDisplay();
+        
+        // 시각적 피드백 (초록색 깜빡)
+        const fontValue = document.getElementById('fontValue');
+        const speedValue = document.getElementById('speedValue');
+        fontValue.style.color = '#00aa00';
+        speedValue.style.color = '#00aa00';
+        setTimeout(() => {
+            fontValue.style.color = '#007bff';
+            speedValue.style.color = '#007bff';
+        }, 500);
     }
 
-    // 메시지 추가 및 스크롤 최적화
+    // 페이지 로드 시 설정 불러오기
+    loadSettings();
+
+    // 한글 입력 중 엔터 방지
+    inputEl.addEventListener('compositionstart', () => isComposing = true);
+    inputEl.addEventListener('compositionend', () => isComposing = false);
+
+    // 입력창 내용 변경 시 X 버튼 표시/숨김
+    inputEl.addEventListener('input', () => {
+        if (inputEl.value.trim()) {
+            clearBtn.classList.add('show');
+        } else {
+            clearBtn.classList.remove('show');
+        }
+    });
+
+    // 엔터키 처리
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+            e.preventDefault();
+            handleInput();
+        }
+    });
+
+    // 전체 삭제 함수
+    function clearInput() {
+        inputEl.value = '';
+        clearBtn.classList.remove('show');
+        inputEl.focus();
+    }
+
+    // 정규화 함수
+    function normalize(text) {
+        if (!text) return "";
+        return text.replace(/\([^)]*\)/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').toLowerCase().trim();
+    }
+
+    // 메시지 추가 (애니메이션 포함)
     function addMessage(text, type, role, idx, extra="") {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
+        
+        // 배역별 색상 적용 (모든 타입에 적용)
+        if (roleColors[role] && type !== 'action') {
+            div.style.background = roleColors[role];
+        }
+        
         div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}${extra}`;
         chatWindow.appendChild(div);
         
-        // 브라우저 렌더링 주기와 동기화하여 스크롤
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                div.classList.add('animate');
-                chatWindow.scrollTo({
-                    top: chatWindow.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 50);
-        });
+        // 애니메이션 트리거 (약간의 지연 후)
+        setTimeout(() => {
+            div.classList.add('animate');
+        }, 10);
+        
+        // 스크롤 (애니메이션 후)
+        setTimeout(() => {
+            chatWindow.scrollTo({
+                top: chatWindow.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
     }
 
+    // 다음 내 차례까지 자동 진행 (설정된 딜레이)
     async function showNext() {
         while (currentIdx < script.length) {
             const item = script[currentIdx];
-            if (myRoles.some(role => item.role.includes(role))) {
+            const isMyTurn = myRoles.some(role => item.role.includes(role));
+            
+            if (isMyTurn) {
                 myTurnIdx = currentIdx;
                 return;
             }
+            
             const type = item.role === "(지문)" ? "action" : "bot";
             addMessage(item.text, type, item.role, item.idx);
             currentIdx++;
-            await new Promise(r => setTimeout(r, messageDelay));
+            
+            // 설정된 딜레이만큼 대기
+            await new Promise(resolve => setTimeout(resolve, messageDelay));
+        }
+        
+        // 모든 대사 끝
+        if (currentIdx >= script.length) {
+            const endDiv = document.createElement('div');
+            endDiv.className = 'msg action animate';
+            endDiv.innerHTML = '🎉 연습 완료!';
+            chatWindow.appendChild(endDiv);
+            myTurnIdx = null;
         }
     }
 
+    // 입력 처리
     function handleInput() {
         const rawVal = inputEl.value.trim();
-        if (/^\d+$/.test(rawVal)) { jumpToIndex(parseInt(rawVal)); return; }
-        if (myTurnIdx === null) { inputEl.value = ""; return; }
 
-        const target = script[myTurnIdx];
-        if (!rawVal) {
-            addMessage("(힌트 확인)", 'user', target.role, target.idx, `<div class="answer-box wrong">💡 정답: ${target.text}</div>`);
+        // 1. 숫자 입력 시 해당 인덱스로 점프
+        if (/^\d+$/.test(rawVal)) {
+            jumpToIndex(parseInt(rawVal));
+            inputEl.value = "";
+            clearBtn.classList.remove('show');
             return;
         }
 
-        const isCorrect = normalize(rawVal) === normalize(target.text) || getSimilarity(normalize(rawVal), normalize(target.text)) >= 0.7;
-        const resultBox = isCorrect ? `<div class="answer-box correct">✓ 정답!</div>` : `<div class="answer-box wrong">✗ 오답! 정답: ${target.text}</div>`;
-        
+        // 현재 내 차례가 아니면 무시
+        if (myTurnIdx === null) {
+            inputEl.value = "";
+            clearBtn.classList.remove('show');
+            return;
+        }
+
+        const target = script[myTurnIdx];
+
+        // 2. 빈 엔터 입력 시 힌트(정답) 표시
+        if (!rawVal) {
+            const hintBox = `
+                <div class="answer-box wrong">
+                    💡 힌트 (정답): <br>
+                    <strong>${target.text}</strong>
+                </div>
+            `;
+            addMessage("(내 대사 확인)", 'user', target.role, target.idx, hintBox);
+            return;
+        }
+
+        // 3. 텍스트 입력 시 유사도 검사
+        const similarity = getSimilarity(normalize(rawVal), normalize(target.text));
+        const isCorrect = similarity >= 0.7;
+
+        let resultBox = "";
+        if (isCorrect) {
+            resultBox = `<div class="answer-box correct">✓ 정답입니다!</div>`;
+        } else {
+            resultBox = `
+                <div class="answer-box wrong">
+                    ✗ 틀렸습니다! (유사도: ${(similarity * 100).toFixed(0)}%)<br>
+                    <strong>정답: ${target.text}</strong>
+                </div>
+            `;
+        }
+
         addMessage(rawVal, 'user', target.role, target.idx, resultBox);
-        if (isCorrect) { inputEl.value = ''; currentIdx = myTurnIdx + 1; myTurnIdx = null; setTimeout(showNext, 300); }
+        
+        if (isCorrect) {
+            inputEl.value = '';
+            clearBtn.classList.remove('show');
+            currentIdx = myTurnIdx + 1;
+            myTurnIdx = null;
+            setTimeout(showNext, 300);
+        }
     }
 
-    function jumpToIndex(num) {
-        const found = script.findIndex(item => parseInt(item.idx) === num);
-        if (found !== -1) { chatWindow.innerHTML = ''; currentIdx = found; myTurnIdx = null; showNext(); }
-    }
-
+    // 다음 버튼 - 내 차례로 건너뛰기
     function skipToNext() {
         if (myTurnIdx !== null) {
+            // 현재 내 차례면 정답 표시하고 넘어가기
             const target = script[myTurnIdx];
-            addMessage("(건너뛰기)", 'user', target.role, target.idx, `<div class="answer-box">⏭️ ${target.text}</div>`);
-            currentIdx = myTurnIdx + 1; myTurnIdx = null; setTimeout(showNext, 300);
-        } else { showNext(); }
+            const hintBox = `<div class="answer-box">⏭️ 건너뛰기<br><strong>${target.text}</strong></div>`;
+            addMessage("(건너뛰기)", 'user', target.role, target.idx, hintBox);
+            
+            inputEl.value = '';
+            clearBtn.classList.remove('show');
+            currentIdx = myTurnIdx + 1;
+            myTurnIdx = null;
+            setTimeout(showNext, 300);
+        } else {
+            // 내 차례 아니면 다음 내 차례 찾기
+            showNext();
+        }
     }
 
-    function normalize(text) { return text.replace(/\([^)]*\)/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').toLowerCase().trim(); }
+    // 특정 인덱스로 점프
+    function jumpToIndex(num) {
+        // script 내의 idx 값과 입력한 숫자가 일치하는 요소 찾기
+        const foundIndex = script.findIndex(item => parseInt(item.idx) === num);
+        
+        if (foundIndex === -1) {
+            alert(`번호 ${num}을(를) 찾을 수 없습니다.`);
+            return;
+        }
+
+        // 화면 초기화
+        chatWindow.innerHTML = '';
+        currentIdx = foundIndex;
+        myTurnIdx = null;
+        
+        // 액션 메시지 추가
+        const jumpDiv = document.createElement('div');
+        jumpDiv.className = 'msg action';
+        jumpDiv.innerHTML = `🚩 [${num}]번으로 이동`;
+        chatWindow.appendChild(jumpDiv);
+        
+        showNext();
+    }
+
+    // 유사도 계산
     function getSimilarity(s1, s2) {
+        if (s1 === s2) return 1.0;
         let longer = s1.length > s2.length ? s1 : s2;
         let shorter = s1.length > s2.length ? s2 : s1;
         if (longer.length === 0) return 1.0;
         return (longer.length - editDistance(longer, shorter)) / longer.length;
     }
+
+    // 편집 거리 계산
     function editDistance(s1, s2) {
         let costs = [];
         for (let i = 0; i <= s1.length; i++) {
@@ -295,8 +765,10 @@
                 if (i === 0) costs[j] = j;
                 else if (j > 0) {
                     let newValue = costs[j - 1];
-                    if (s1.charAt(i - 1) !== s2.charAt(j - 1)) newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                    costs[j - 1] = lastValue; lastValue = newValue;
+                    if (s1.charAt(i - 1) !== s2.charAt(j - 1))
+                        newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                    costs[j - 1] = lastValue;
+                    lastValue = newValue;
                 }
             }
             if (i > 0) costs[s2.length] = lastValue;
@@ -304,14 +776,26 @@
         return costs[s2.length];
     }
 
-    function clearInput() { inputEl.value = ''; clearBtn.classList.remove('show'); inputEl.focus(); }
-    inputEl.addEventListener('input', () => clearBtn.classList.toggle('show', !!inputEl.value.trim()));
-    inputEl.addEventListener('compositionstart', () => isComposing = true);
-    inputEl.addEventListener('compositionend', () => isComposing = false);
-    inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !isComposing) { e.preventDefault(); handleInput(); } });
-
-    loadSettings();
+    // 시작
     showNext();
+    
+    // 포커스 유지
+    inputEl.focus();
+    
+    // ============================================
+    // 새로고침 감지 - 홈으로 리다이렉트
+    // ============================================
+    // performance API로 새로고침 감지
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        // 새로고침된 경우 홈으로
+        window.location.href = '/';
+    }
+    
+    // 또는 페이지 이탈 시도 시 경고 (선택사항)
+    // window.addEventListener('beforeunload', function(e) {
+    //     e.preventDefault();
+    //     e.returnValue = '연습을 종료하시겠습니까?';
+    // });
 </script>
 </body>
 </html>
