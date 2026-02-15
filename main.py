@@ -28,9 +28,9 @@ async def select_role(request: Request):
     if not os.path.exists(SCRIPT_DIR):
         return HTMLResponse(f"에러: {SCRIPT_DIR} 폴더가 없습니다. 폴더를 생성하고 대본을 넣어주세요.")
 
-    files = [f for f in os.listdir(SCRIPT_DIR) if f.endswith("_numbering.txt")]
+    files = [f for f in os.listdir(SCRIPT_DIR) if f.endswith(".txt")]
     if not files:
-        return HTMLResponse("대본 파일(_numbering.txt)이 scripts 폴더에 없습니다.")
+        return HTMLResponse("대본 파일.txt)이 scripts 폴더에 없습니다.")
 
     # 첫 번째 대본을 기준으로 배역 추출
     filename = files[0]
