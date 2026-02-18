@@ -6,134 +6,126 @@
     <title>Script Mate - 전체 보기</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        :root {
-            --font-size: 18px;
-            --message-delay: 500;
-        }
-        
+        :root { --font-size: 18px; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-            background: #bacee0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            -webkit-overflow-scrolling: touch;
+            background: #bacee0; display: flex; flex-direction: column; 
+            height: 100vh; height: 100dvh; overflow: hidden; position: fixed; width: 100%;
         }
-        
         .top-bar { 
-            background: white; 
-            padding: 12px 16px; 
-            border-bottom: 2px solid #e0e0e0; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            flex-shrink: 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            gap: 8px;
+            background: white; padding: 12px 16px; border-bottom: 2px solid #e0e0e0; 
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 100; gap: 8px;
         }
-        
         .top-bar button { 
-            background: #222; 
-            color: white; 
-            border: none; 
-            padding: 10px 16px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
+            background: #222; color: white; border: none; padding: 10px 16px; 
+            border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
         }
-        
         .top-bar .filename {
-            font-weight: bold;
-            font-size: 14px;
-            flex: 1;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            padding: 0 8px;
-            min-width: 0;
+            font-weight: bold; font-size: 14px; flex: 1; text-align: center;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
         }
+        .settings-btn { background: #666 !important; padding: 10px 12px !important; font-size: 18px !important; }
+        
+        /* 설정 패널 */
+        .settings-panel {
+            position: fixed; top: 0; right: -100%; width: 300px; height: 100%;
+            background: white; box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            z-index: 200; transition: right 0.3s ease; overflow-y: auto;
+        }
+        .settings-panel.open { right: 0; }
+        .settings-header {
+            padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .settings-header h3 { font-size: 18px; margin: 0; }
+        .close-btn {
+            background: none; border: none; font-size: 24px; cursor: pointer;
+            color: #666; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .settings-content { padding: 24px; }
+        .setting-item { margin-bottom: 28px; }
+        .setting-label { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: block; color: #333; }
+        .setting-value {
+            font-size: 20px; font-weight: bold; color: #007bff;
+            margin-bottom: 8px; display: block; transition: color 0.3s;
+        }
+        .setting-controls { display: flex; gap: 8px; }
+        .setting-btn {
+            flex: 1; padding: 12px; background: #f0f0f0; border: none;
+            border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+        .setting-btn:active { background: #ddd; }
+        
+        .tts-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+        .tswitch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+        .tswitch input { opacity: 0; width: 0; height: 0; }
+        .tslider {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc; border-radius: 28px; cursor: pointer; transition: 0.3s;
+        }
+        .tslider::before {
+            content: ''; position: absolute; height: 22px; width: 22px;
+            left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;
+        }
+        .tswitch input:checked + .tslider { background: #007bff; }
+        .tswitch input:checked + .tslider::before { transform: translateX(24px); }
+        
+        .speed-wrap { margin-top: 12px; }
+        .speed-wrap.hidden { display: none; }
+        .spd-slider {
+            width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
+            background: #ddd; border-radius: 3px; outline: none;
+        }
+        .spd-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 22px; height: 22px;
+            background: #007bff; border-radius: 50%; cursor: pointer;
+        }
+        .spd-labels { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 4px; }
+        
+        .settings-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 199; display: none;
+        }
+        .settings-overlay.show { display: block; }
         
         #chat-window { 
-            flex: 1; 
-            overflow-y: auto; 
-            overflow-x: hidden;
-            padding: 16px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px;
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: 16px; display: flex; flex-direction: column; gap: 12px;
             -webkit-overflow-scrolling: touch;
         }
-        
         .msg { 
-            max-width: 85%; 
-            padding: 14px 16px; 
-            border-radius: 18px; 
-            line-height: 1.6; 
-            font-size: var(--font-size, 18px);
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            opacity: 0;
-            transform: translateY(10px);
+            max-width: 85%; padding: 14px 16px; border-radius: 18px; line-height: 1.6; 
+            font-size: var(--font-size); word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); opacity: 0; transform: translateY(10px);
         }
-        
-        .msg.animate {
-            animation: slideIn 0.4s ease-out forwards;
-        }
-        
-        @keyframes slideIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .bot { 
-            align-self: flex-start; 
-            background: white; 
-            border-bottom-left-radius: 4px;
-        }
-        
-        .user { 
-            align-self: flex-end; 
-            background: #fee500; 
-            border-bottom-right-radius: 4px;
-        }
-        
+        .msg.animate { animation: slideIn 0.4s ease-out forwards; }
+        @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+        .bot { align-self: flex-start; background: white; border-bottom-left-radius: 4px; }
+        .user { align-self: flex-end; background: #fee500; border-bottom-right-radius: 4px; }
         .action { 
-            align-self: center; 
-            background: rgba(0,0,0,0.08); 
-            font-size: var(--font-size, 18px);
-            border-radius: 20px; 
-            padding: 8px 16px;
-            max-width: 90%;
-            text-align: center;
+            align-self: center; background: rgba(0,0,0,0.08); font-size: var(--font-size);
+            border-radius: 20px; padding: 8px 16px; max-width: 90%; text-align: center;
         }
-        
         .role-label { 
-            font-size: calc(var(--font-size, 18px) * 0.75);
-            font-weight: 700; 
-            margin-bottom: 6px; 
-            display: block; 
-            color: #555; 
-            border-bottom: 1px solid rgba(0,0,0,0.08); 
-            padding-bottom: 4px;
+            font-size: calc(var(--font-size) * 0.75); font-weight: 700; margin-bottom: 6px; 
+            display: block; color: #555; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 4px;
         }
+        .msg.speaking { box-shadow: 0 0 0 2px #007bff, 0 2px 8px rgba(0,123,255,0.3); }
         
-        @supports (-webkit-touch-callout: none) {
-            body {
-                height: -webkit-fill-available;
-            }
+        .bottom-bar {
+            background: white; padding: 10px 16px; border-top: 2px solid #e0e0e0;
+            display: flex; justify-content: center; gap: 12px; flex-shrink: 0;
         }
+        .bottom-bar button {
+            padding: 10px 24px; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+        }
+        .bp { background: #ff6b6b; color: white; }
+        .br { background: #51cf66; color: white; }
+        
+        @supports (-webkit-touch-callout: none) { body { height: -webkit-fill-available; } }
     </style>
 </head>
 <body>
@@ -141,84 +133,198 @@
 <div class="top-bar">
     <button onclick="location.href='/'">🏠</button>
     <div class="filename">📖 {{ filename }}</div>
+    <button class="settings-btn" onclick="toggleSettings()">☰</button>
+</div>
+
+<div class="settings-overlay" id="overlay" onclick="toggleSettings()"></div>
+
+<div class="settings-panel" id="panel">
+    <div class="settings-header">
+        <h3>⚙️ 설정</h3>
+        <button class="close-btn" onclick="toggleSettings()">✕</button>
+    </div>
+    <div class="settings-content">
+        <div class="setting-item">
+            <label class="setting-label">🔊 음성 지원</label>
+            <div class="tts-row">
+                <label class="tswitch">
+                    <input type="checkbox" id="ttsSwitch" onchange="toggleTTS()">
+                    <span class="tslider"></span>
+                </label>
+                <span id="ttsLabel">OFF</span>
+            </div>
+            <div class="speed-wrap hidden" id="spdWrap">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <span style="font-size:14px;font-weight:500;">음성 속도</span>
+                    <span style="font-size:16px;font-weight:700;color:#007bff;" id="spdVal">1.2x</span>
+                </div>
+                <input type="range" class="spd-slider" id="spdSlider" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updateSpd(this.value)">
+                <div class="spd-labels"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <label class="setting-label">대사 스크롤 속도</label>
+            <span class="setting-value" id="delayVal">0.5초</span>
+            <div class="setting-controls">
+                <button class="setting-btn" onclick="chgDelay(-1);event.stopPropagation()">빠르게 -</button>
+                <button class="setting-btn" onclick="chgDelay(1);event.stopPropagation()">느리게 +</button>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 0.2초 ~ 2.0초</div>
+            <div style="margin-top:4px;font-size:12px;color:#999;" id="delayNote"></div>
+        </div>
+        
+        <div class="setting-item">
+            <label class="setting-label">폰트 크기</label>
+            <span class="setting-value" id="fontVal">18px</span>
+            <div class="setting-controls">
+                <button class="setting-btn" onclick="chgFont(-2);event.stopPropagation()">A-</button>
+                <button class="setting-btn" onclick="chgFont(2);event.stopPropagation()">A+</button>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 12px ~ 28px</div>
+        </div>
+        
+        <button class="setting-btn" onclick="resetAll();event.stopPropagation()" style="width:100%;background:#fee500;margin-top:20px;">🔄 기본값 초기화</button>
+    </div>
 </div>
 
 <div id="chat-window"></div>
 
+<div class="bottom-bar">
+    <button class="bp" id="pauseBtn" onclick="togglePause()">⏸️ 일시정지</button>
+</div>
+
 <script>
-    const script = JSON.parse('{{ script | tojson | safe }}');
+    const scriptData = JSON.parse('{{ script | tojson | safe }}');
     const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
-    const roleColors = JSON.parse('{{ colors | safe }}');
+    let roleColors = {}; try { roleColors = JSON.parse('{{ colors | safe }}'); } catch(e) {}
+    let roleGenders = {}; try { roleGenders = JSON.parse('{{ genders | safe }}'); } catch(e) {}
     
-    let currentFontSize = 18;
-    let messageDelay = 500;
+    let ttsOn = '{{ tts_enabled }}' === 'true';
+    let ttsSpd = parseFloat('{{ tts_speed }}') || 1.2;
+    let fontSize = 18, delay = 500, paused = false, audio = null, idx = 0, running = false;
+    const chat = document.getElementById('chat-window');
 
-    const chatWindow = document.getElementById('chat-window');
-
-    // 설정 불러오기
-    function loadSettings() {
-        const savedFontSize = localStorage.getItem('scriptMateFontSize');
-        if (savedFontSize) {
-            currentFontSize = parseInt(savedFontSize);
-        }
-        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
-        
-        const savedDelay = localStorage.getItem('scriptMateDelay');
-        if (savedDelay) {
-            messageDelay = parseInt(savedDelay);
-        }
+    // 설정
+    function loadS() {
+        const sf = localStorage.getItem('smFont'); if (sf) fontSize = parseInt(sf);
+        document.documentElement.style.setProperty('--font-size', fontSize+'px');
+        document.getElementById('fontVal').textContent = fontSize+'px';
+        const sd = localStorage.getItem('smDelay'); if (sd) delay = parseInt(sd);
+        document.getElementById('delayVal').textContent = (delay/1000).toFixed(1)+'초';
+        document.getElementById('ttsSwitch').checked = ttsOn;
+        updTTSUI();
+        document.getElementById('spdSlider').value = ttsSpd;
+        document.getElementById('spdVal').textContent = ttsSpd.toFixed(1)+'x';
     }
-
-    loadSettings();
-
-    // 메시지 추가 (즉시 출력)
-    function addMessage(text, type, role, idx) {
+    function toggleSettings() {
+        document.getElementById('panel').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
+    function chgDelay(d) {
+        delay += d*100; delay = Math.max(200, Math.min(2000, delay));
+        localStorage.setItem('smDelay', delay);
+        document.getElementById('delayVal').textContent = (delay/1000).toFixed(1)+'초';
+        flash('delayVal');
+    }
+    function chgFont(d) {
+        fontSize += d; fontSize = Math.max(12, Math.min(28, fontSize));
+        document.documentElement.style.setProperty('--font-size', fontSize+'px');
+        localStorage.setItem('smFont', fontSize);
+        document.getElementById('fontVal').textContent = fontSize+'px';
+        flash('fontVal');
+    }
+    function resetAll() {
+        fontSize=18; delay=500;
+        document.documentElement.style.setProperty('--font-size','18px');
+        localStorage.setItem('smFont','18'); localStorage.setItem('smDelay','500');
+        document.getElementById('fontVal').textContent='18px';
+        document.getElementById('delayVal').textContent='0.5초';
+        flash('fontVal'); flash('delayVal');
+    }
+    function flash(id) {
+        const el=document.getElementById(id); el.style.color='#00aa00';
+        setTimeout(()=>el.style.color='#007bff',300);
+    }
+    
+    // TTS
+    function toggleTTS() {
+        ttsOn = document.getElementById('ttsSwitch').checked;
+        updTTSUI();
+        if (!ttsOn && audio) { audio.pause(); audio=null; }
+    }
+    function updTTSUI() {
+        document.getElementById('ttsLabel').textContent = ttsOn?'ON':'OFF';
+        document.getElementById('spdWrap').classList.toggle('hidden', !ttsOn);
+        document.getElementById('delayNote').textContent = ttsOn?'🔊 음성 모드 - 음성 완료 후 자동 진행':'';
+    }
+    function updateSpd(v) {
+        ttsSpd = parseFloat(v);
+        document.getElementById('spdVal').textContent = ttsSpd.toFixed(1)+'x';
+    }
+    
+    function speak(text, role) {
+        return new Promise(resolve => {
+            if (!ttsOn || !text?.trim()) { resolve(); return; }
+            if (audio) { audio.pause(); audio=null; }
+            
+            const gender = roleGenders[role] || 'female';
+            const url = `/tts?text=${encodeURIComponent(text)}&gender=${gender}&speed=${ttsSpd}`;
+            audio = new Audio(url);
+            audio.onended = () => { audio=null; resolve(); };
+            audio.onerror = () => { audio=null; resolve(); };
+            audio.play().catch(() => { audio=null; resolve(); });
+        });
+    }
+    
+    function addMsg(text, type, role, i) {
         const div = document.createElement('div');
-        div.className = `msg ${type} animate`; // 즉시 animate 클래스 추가
-        
-        // 배역별 색상 적용
-        if (roleColors[role]) {
-            div.style.background = roleColors[role];
-        }
-        
-        div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}`;
-        chatWindow.appendChild(div);
+        div.className = `msg ${type} animate`;
+        if (roleColors[role] && type!=='action') div.style.background = roleColors[role];
+        div.innerHTML = `<span class="role-label">[${i}] ${role}</span>${text}`;
+        chat.appendChild(div);
+        chat.scrollTo({top:chat.scrollHeight, behavior:'smooth'});
+        return div;
     }
-
-    // 전체 대사 표시 (즉시 출력 - 애니메이션 없음)
-    function showAll() {
-        for (let i = 0; i < script.length; i++) {
-            const item = script[i];
-            
-            // 내 배역인지 확인
-            const isMyRole = myRoles.some(role => item.role.includes(role));
-            
-            let type;
-            if (item.role === "(지문)") {
-                type = "action";
-            } else if (isMyRole) {
-                type = "user";  // 내 배역은 오른쪽
-            } else {
-                type = "bot";   // 다른 배역은 왼쪽
-            }
-            
-            addMessage(item.text, type, item.role, item.idx);
-        }
-        
-        // 완료 메시지
-        const endDiv = document.createElement('div');
-        endDiv.className = 'msg action animate';
-        endDiv.innerHTML = '🎉 전체 보기 완료!';
-        chatWindow.appendChild(endDiv);
-    }
-
-    // 시작
-    showAll();
     
-    // 새로고침 감지
-    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
-        window.location.href = '/';
+    function waitPause() {
+        return new Promise(r => { if(!paused){r();return;} const c=setInterval(()=>{if(!paused){clearInterval(c);r();}},100); });
     }
+    function togglePause() {
+        paused=!paused;
+        const b=document.getElementById('pauseBtn');
+        if(paused){b.textContent='▶️ 재개';b.className='br';if(audio)audio.pause();}
+        else{b.textContent='⏸️ 일시정지';b.className='bp';if(audio)audio.play();}
+    }
+    
+    async function run() {
+        if(running)return; running=true;
+        for(;idx<scriptData.length;idx++) {
+            await waitPause();
+            const it=scriptData[idx];
+            const my=myRoles.some(r=>it.role.includes(r));
+            const type=it.role==="(지문)"?"action":my?"user":"bot";
+            const el=addMsg(it.text,type,it.role,it.idx);
+            
+            if(ttsOn && it.role!=="(지문)" && it.text.trim()) {
+                el.classList.add('speaking');
+                await speak(it.text, it.role);
+                el.classList.remove('speaking');
+                await new Promise(r=>setTimeout(r,150));
+            } else {
+                await new Promise(r=>setTimeout(r,delay));
+            }
+        }
+        const end=document.createElement('div');
+        end.className='msg action animate';
+        end.innerHTML='🎉 전체 보기 완료!';
+        chat.appendChild(end);
+        chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});
+        running=false;
+    }
+    
+    loadS(); run();
+    if(performance.navigation.type===performance.navigation.TYPE_RELOAD) window.location.href='/';
 </script>
 </body>
 </html>

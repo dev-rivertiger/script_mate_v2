@@ -1,30 +1,94 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form, BackgroundTasks
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import os
 import json
+import asyncio
+import tempfile
 from pathlib import Path
 
 app = FastAPI()
 
-# [보안] 세션 미들웨어 설정
 app.add_middleware(SessionMiddleware, secret_key="script_mate_v2_2026_key_unique")
 
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 SCRIPT_DIR = os.path.join(BASE_DIR, "scripts")
 
-# 1. 메인 홈 화면
+# 한국어 음성 정의
+VOICES = {
+    "female": "ko-KR-SunHiNeural",
+    "male": "ko-KR-InJoonNeural",
+}
+
+# ============================================
+# 🔊 TTS 엔드포인트 (임시파일 → 전송 후 삭제)
+# ============================================
+@app.get("/tts")
+async def tts_endpoint(
+    text: str,
+    gender: str = "female",
+    speed: float = 1.2,
+    background_tasks: BackgroundTasks = None
+):
+    try:
+        import edge_tts
+
+        voice = VOICES.get(gender, VOICES["female"])
+
+        # 속도 변환
+        rate_percent = int((speed - 1.0) * 100)
+        rate_str = f"+{rate_percent}%" if rate_percent >= 0 else f"{rate_percent}%"
+
+        # 🔥 임시 mp3 파일 생성
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+        tmp_path = tmp_file.name
+        tmp_file.close()
+
+        communicate = edge_tts.Communicate(
+            text=text,
+            voice=voice,
+            rate=rate_str
+        )
+        await communicate.save(tmp_path)
+
+        # 🔥 응답 완료 후 파일 삭제
+        def cleanup():
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except:
+                pass
+
+        background_tasks.add_task(cleanup)
+
+        return FileResponse(
+            tmp_path,
+            media_type="audio/mpeg"
+        )
+
+    except ImportError:
+        return JSONResponse(
+            {"error": "edge-tts 미설치. pip install edge-tts 실행 필요"},
+            status_code=500
+        )
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+# ============================================
+# 페이지 라우트
+# ============================================
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
-# 2. 배역 선택 화면
+
 @app.get("/select", response_class=HTMLResponse)
 async def select_role(request: Request, mode: str = "practice"):
     if not os.path.exists(SCRIPT_DIR):
-        return HTMLResponse(f"에러: {SCRIPT_DIR} 폴더가 없습니다. 폴더를 생성하고 대본을 넣어주세요.")
+        return HTMLResponse(f"에러: {SCRIPT_DIR} 폴더가 없습니다.")
 
     files = [f for f in os.listdir(SCRIPT_DIR) if f.endswith(".txt")]
     if not files:
@@ -42,12 +106,15 @@ async def select_role(request: Request, mode: str = "practice"):
                 parts = line.split(" ", 1)
                 idx_part = parts[0].strip("[]")
                 content_part = parts[1]
-
                 role_content = content_part.split(": ", 1)
                 role = role_content[0].strip()
                 text = role_content[1].strip() if len(role_content) > 1 else ""
 
-                script_data.append({"idx": idx_part, "role": role, "text": text})
+                script_data.append({
+                    "idx": idx_part,
+                    "role": role,
+                    "text": text
+                })
 
                 if role != "(지문)":
                     for r in role.split(','):
@@ -60,14 +127,17 @@ async def select_role(request: Request, mode: str = "practice"):
         "filename": filename
     })
 
-# 3. 연습 화면
+
 @app.post("/practice", response_class=HTMLResponse)
 async def practice(
-    request: Request, 
-    filename: str = Form(...), 
+    request: Request,
+    filename: str = Form(...),
     role: str = Form(...),
     mode: str = Form("practice"),
-    colors: str = Form("{}")
+    colors: str = Form("{}"),
+    genders: str = Form("{}"),
+    tts_enabled: str = Form("false"),
+    tts_speed: str = Form("1.2")
 ):
     request.session["my_role"] = role
     request.session["filename"] = filename
@@ -81,7 +151,6 @@ async def practice(
                 parts = line.split(" ", 1)
                 idx_part = parts[0].strip("[]")
                 content_part = parts[1]
-
                 role_content = content_part.split(": ", 1)
                 role_name = role_content[0].strip()
                 text = role_content[1].strip() if len(role_content) > 1 else ""
@@ -92,21 +161,21 @@ async def practice(
                     "text": text
                 })
 
-    # mode에 따라 다른 템플릿 사용
     template_name = "view.html" if mode == "view" else "practice.html"
-    
+
     return templates.TemplateResponse(template_name, {
         "request": request,
         "script": script_data,
         "my_roles": [role],
         "filename": filename,
         "mode": mode,
-        "colors": colors
+        "colors": colors,
+        "genders": genders,
+        "tts_enabled": tts_enabled,
+        "tts_speed": tts_speed
     })
 
-# ============================================
-# 직접 실행 가능 (python main.py)
-# ============================================
+
 if __name__ == "__main__":
     import uvicorn
     print("=" * 60)
@@ -115,5 +184,7 @@ if __name__ == "__main__":
     print("브라우저: http://localhost:8000")
     print("모바일: http://[컴퓨터IP]:8000")
     print("종료: Ctrl + C")
+    print("=" * 60)
+    print("💡 필수: pip install edge-tts")
     print("=" * 60)
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

@@ -6,146 +6,127 @@
     <title>배역 선택 - Script Mate</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            padding: 20px; 
-            background: #f4f7f6; 
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 20px; background: #f4f7f6; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
         }
-        
         .card { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-            width: 100%;
-            max-width: 400px;
+            background: white; padding: 30px; border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px;
         }
+        h2 { text-align: center; margin-bottom: 10px; font-size: 24px; }
+        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
         
-        h2 {
-            text-align: center;
+        /* TTS 토글 */
+        .tts-toggle {
+            background: #f8f9fa; padding: 16px; border-radius: 12px;
+            margin-bottom: 16px; display: flex; align-items: center; gap: 12px;
+        }
+        .tts-toggle input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .tts-toggle label { font-size: 16px; font-weight: 500; cursor: pointer; flex: 1; }
+        
+        /* TTS 설정 영역 */
+        .tts-settings { display: none; margin-bottom: 20px; }
+        .tts-settings.show { display: block; }
+        
+        .tts-setting-box {
+            background: #f0f7ff; padding: 14px 16px; border-radius: 12px;
             margin-bottom: 10px;
-            font-size: 24px;
         }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 24px;
+        .tts-setting-label {
+            font-size: 14px; font-weight: 600; color: #333; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .role-list {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding-right: 8px;
+        .tts-speed-value { color: #007bff; font-weight: 700; }
+        .tts-speed-slider {
+            width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
+            background: #ddd; border-radius: 3px; outline: none;
         }
+        .tts-speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 22px; height: 22px; background: #007bff; border-radius: 50%; cursor: pointer;
+        }
+        .tts-range-labels {
+            display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 4px;
+        }
+        .voice-info {
+            font-size: 13px; color: #666; padding: 8px 0 0;
+        }
+        .voice-info span { font-weight: 600; color: #007bff; }
         
+        /* 배역 목록 */
+        .role-list { max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding-right: 8px; }
         .role-option { 
-            margin: 12px 0;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            gap: 12px;
+            margin: 12px 0; padding: 16px; background: #f8f9fa; border-radius: 12px;
+            display: flex; align-items: center; transition: all 0.2s;
+            border: 2px solid transparent; gap: 12px;
+        }
+        .role-option:hover { background: #e9ecef; }
+        .role-option:has(input:checked) { background: #e7f3ff; border-color: #007bff; }
+        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; }
+        .role-name { font-size: 16px; font-weight: 500; flex: 1; cursor: pointer; }
+        .role-controls { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+        
+        /* 색상 미리보기 */
+        .color-preview {
+            width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc;
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .color-preview:hover { transform: scale(1.15); border-color: #007bff; }
+        
+        /* 성별 버튼 */
+        .control-btn {
+            padding: 6px 12px; border: 1px solid #ddd; background: white;
+            border-radius: 8px; cursor: pointer; font-size: 12px;
+            transition: all 0.2s; font-weight: 500;
+        }
+        .control-btn:hover { background: #f8f9fa; border-color: #007bff; }
+        .control-btn.active { background: #007bff; color: white; border-color: #007bff; }
+        .gender-btn { display: none; }
+        
+        /* 모달 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); display: none;
+            align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: white; padding: 24px; border-radius: 16px;
+            max-width: 400px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            font-size: 18px; font-weight: 600; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-close {
+            background: none; border: none; font-size: 28px; cursor: pointer;
+            color: #666; padding: 0; width: 32px; height: 32px; line-height: 1;
+        }
+        .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .color-option-modal {
+            width: 100%; aspect-ratio: 1; border-radius: 12px;
+            border: 3px solid transparent; cursor: pointer;
+            transition: all 0.2s; position: relative;
+        }
+        .color-option-modal:hover { transform: scale(1.05); border-color: #666; }
+        .color-option-modal.selected { border-color: #007bff; border-width: 4px; }
+        .color-option-modal.selected::after {
+            content: '✓'; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); color: #333; font-weight: bold; font-size: 24px;
         }
         
-        .role-option:hover {
-            background: #e9ecef;
+        button[type="submit"] { 
+            background: #007bff; color: white; padding: 16px; border: none; 
+            border-radius: 12px; cursor: pointer; font-size: 16px;
+            width: 100%; font-weight: bold; transition: background 0.2s;
         }
+        button[type="submit"]:hover { background: #0056b3; }
         
-        .role-option:has(input:checked) {
-            background: #e7f3ff;
-            border-color: #007bff;
-        }
-        
-        input[type="radio"] { 
-            width: 20px;
-            height: 20px;
-            margin-right: 0;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        
-        .role-name {
-            font-size: 16px;
-            font-weight: 500;
-            flex: 1;
-        }
-        
-        .color-picker-wrapper {
-            display: flex;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-        
-        .color-option {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid #ddd;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-        
-        .color-option:hover {
-            transform: scale(1.1);
-            border-color: #666;
-        }
-        
-        .color-option.selected {
-            border-color: #007bff;
-            border-width: 3px;
-        }
-        
-        .color-option.selected::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #333;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        
-        button { 
-            background: #007bff; 
-            color: white; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 16px;
-            width: 100%;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        
-        button:hover {
-            background: #0056b3;
-        }
-        
-        button:active {
-            transform: scale(0.98);
-        }
-        
-        /* 모바일 최적화 */
         @media (max-width: 600px) {
-            body { padding: 16px; }
-            .card { padding: 24px 20px; }
-            h2 { font-size: 22px; }
-            .role-name { font-size: 15px; }
+            body { padding: 16px; } .card { padding: 24px 20px; }
+            h2 { font-size: 22px; } .role-name { font-size: 15px; }
         }
     </style>
 </head>
@@ -154,26 +135,51 @@
         <h2>🎭 배역 선택</h2>
         <p class="subtitle">연습할 배역을 선택하세요</p>
         
+        <div class="tts-toggle">
+            <input type="checkbox" id="ttsToggle" onchange="toggleTTS()">
+            <label for="ttsToggle">🔊 음성 지원 (Edge TTS)</label>
+        </div>
+        
+        <div class="tts-settings" id="ttsSettings">
+            <div class="tts-setting-box">
+                <div class="tts-setting-label">
+                    🎤 음성 속도
+                    <span class="tts-speed-value" id="ttsSpeedDisplay">1.2x</span>
+                </div>
+                <input type="range" class="tts-speed-slider" id="ttsSpeedSlider" 
+                       min="0.5" max="2.0" step="0.1" value="1.2" 
+                       oninput="updateTTSSpeed(this.value)">
+                <div class="tts-range-labels">
+                    <span>느리게 0.5x</span>
+                    <span>빠르게 2.0x</span>
+                </div>
+                <div class="voice-info">
+                    여성: <span>SunHi</span> · 남성: <span>InJoon</span> — 배역별 성별 선택 가능
+                </div>
+            </div>
+        </div>
+        
         <form action="/practice" method="post" id="roleForm">
             <input type="hidden" name="filename" value="{{ filename }}">
             <input type="hidden" name="mode" id="modeInput" value="practice">
             <input type="hidden" name="colors" id="colorsInput" value="">
+            <input type="hidden" name="genders" id="gendersInput" value="">
+            <input type="hidden" name="tts_enabled" id="ttsEnabledInput" value="false">
+            <input type="hidden" name="tts_speed" id="ttsSpeedInput" value="1.2">
             
-            <div class="role-list">
+            <div class="role-list" id="roleList">
                 {% for role in roles %}
-                    <label class="role-option">
+                    <div class="role-option">
                         <input type="radio" name="role" value="{{ role }}" required>
-                        <span class="role-name">{{ role }}</span>
-                        <div class="color-picker-wrapper">
-                            <div class="color-option" style="background: #ffffff;" data-role="{{ role }}" data-color="#ffffff" onclick="selectColor(event, '{{ role }}', '#ffffff')"></div>
-                            <div class="color-option" style="background: #ffe4e1;" data-role="{{ role }}" data-color="#ffe4e1" onclick="selectColor(event, '{{ role }}', '#ffe4e1')"></div>
-                            <div class="color-option" style="background: #fff4e6;" data-role="{{ role }}" data-color="#fff4e6" onclick="selectColor(event, '{{ role }}', '#fff4e6')"></div>
-                            <div class="color-option" style="background: #e6f7ff;" data-role="{{ role }}" data-color="#e6f7ff" onclick="selectColor(event, '{{ role }}', '#e6f7ff')"></div>
-                            <div class="color-option" style="background: #f0f5ff;" data-role="{{ role }}" data-color="#f0f5ff" onclick="selectColor(event, '{{ role }}', '#f0f5ff')"></div>
-                            <div class="color-option" style="background: #f6ffed;" data-role="{{ role }}" data-color="#f6ffed" onclick="selectColor(event, '{{ role }}', '#f6ffed')"></div>
-                            <div class="color-option" style="background: #fff0f6;" data-role="{{ role }}" data-color="#fff0f6" onclick="selectColor(event, '{{ role }}', '#fff0f6')"></div>
+                        <span class="role-name" onclick="this.previousElementSibling.click()">{{ role }}</span>
+                        <div class="role-controls">
+                            <button type="button" class="control-btn gender-btn" data-role="{{ role }}" data-gender="female" onclick="selectGender(event, '{{ role }}', 'female')">여성</button>
+                            <button type="button" class="control-btn gender-btn" data-role="{{ role }}" data-gender="male" onclick="selectGender(event, '{{ role }}', 'male')">남성</button>
+                            <div class="color-preview" data-role="{{ role }}" 
+                                 style="background: #ffffff;" 
+                                 onclick="openColorModal(event, '{{ role }}', this)" title="색상 선택"></div>
                         </div>
-                    </label>
+                    </div>
                 {% endfor %}
             </div>
             
@@ -181,52 +187,114 @@
         </form>
     </div>
     
+    <!-- 색상 모달 -->
+    <div class="modal-overlay" id="colorModal" onclick="closeColorModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span id="modalRoleName">배역</span>의 색상
+                <button class="modal-close" onclick="closeColorModal(event)">×</button>
+            </div>
+            <div class="color-grid">
+                <div class="color-option-modal" style="background: #ffffff;" data-color="#ffffff" onclick="selectColor('#ffffff')"></div>
+                <div class="color-option-modal" style="background: #ffe4e1;" data-color="#ffe4e1" onclick="selectColor('#ffe4e1')"></div>
+                <div class="color-option-modal" style="background: #fff4e6;" data-color="#fff4e6" onclick="selectColor('#fff4e6')"></div>
+                <div class="color-option-modal" style="background: #e6f7ff;" data-color="#e6f7ff" onclick="selectColor('#e6f7ff')"></div>
+                <div class="color-option-modal" style="background: #f0f5ff;" data-color="#f0f5ff" onclick="selectColor('#f0f5ff')"></div>
+                <div class="color-option-modal" style="background: #f6ffed;" data-color="#f6ffed" onclick="selectColor('#f6ffed')"></div>
+                <div class="color-option-modal" style="background: #fff0f6;" data-color="#fff0f6" onclick="selectColor('#fff0f6')"></div>
+                <div class="color-option-modal" style="background: #fef6e6;" data-color="#fef6e6" onclick="selectColor('#fef6e6')"></div>
+            </div>
+        </div>
+    </div>
+    
     <script>
-        // URL에서 mode 가져오기
         const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode') || 'practice';
-        document.getElementById('modeInput').value = mode;
+        document.getElementById('modeInput').value = urlParams.get('mode') || 'practice';
         
-        // 색상 저장 객체
         const roleColors = {};
+        const roleGenders = {};
+        let currentModalRole = null;
+        let currentModalPreview = null;
         
-        // 색상 선택 함수
-        function selectColor(event, role, color) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            // 해당 배역의 모든 색상 버튼에서 selected 제거
-            document.querySelectorAll(`.color-option[data-role="${role}"]`).forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            // 클릭한 버튼에 selected 추가
-            event.currentTarget.classList.add('selected');
-            
-            // 색상 저장
-            roleColors[role] = color;
-            
-            // hidden input 업데이트
-            document.getElementById('colorsInput').value = JSON.stringify(roleColors);
-        }
-        
-        // 기본 색상 설정 (흰색)
         {% for role in roles %}
             roleColors['{{ role }}'] = '#ffffff';
+            roleGenders['{{ role }}'] = 'female';
         {% endfor %}
-        document.getElementById('colorsInput').value = JSON.stringify(roleColors);
         
-        // 첫 번째 색상 버튼 선택
-        document.querySelectorAll('.color-option[data-color="#ffffff"]').forEach(btn => {
-            btn.classList.add('selected');
-        });
-    </script>
-
-    <script>
-        // 새로고침 감지 - 홈으로 리다이렉트
-        if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
-            window.location.href = '/';
+        // TTS 토글
+        function toggleTTS() {
+            const enabled = document.getElementById('ttsToggle').checked;
+            document.getElementById('ttsEnabledInput').value = enabled;
+            
+            const settings = document.getElementById('ttsSettings');
+            settings.classList.toggle('show', enabled);
+            
+            document.querySelectorAll('.gender-btn').forEach(btn => {
+                btn.style.display = enabled ? 'block' : 'none';
+            });
+            
+            // 기본 여성 active
+            if (enabled) {
+                document.querySelectorAll('.gender-btn[data-gender="female"]').forEach(btn => {
+                    btn.classList.add('active');
+                });
+            }
         }
+        
+        function updateTTSSpeed(value) {
+            document.getElementById('ttsSpeedDisplay').textContent = parseFloat(value).toFixed(1) + 'x';
+            document.getElementById('ttsSpeedInput').value = value;
+        }
+        
+        // 성별 선택
+        function selectGender(event, role, gender) {
+            event.preventDefault(); event.stopPropagation();
+            
+            document.querySelectorAll(`.gender-btn[data-role="${role}"]`).forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            roleGenders[role] = gender;
+            document.getElementById('gendersInput').value = JSON.stringify(roleGenders);
+        }
+        
+        // 색상 모달
+        function openColorModal(event, role, previewEl) {
+            event.preventDefault(); event.stopPropagation();
+            currentModalRole = role;
+            currentModalPreview = previewEl;
+            document.getElementById('modalRoleName').textContent = role;
+            
+            const cur = roleColors[role] || '#ffffff';
+            document.querySelectorAll('.color-option-modal').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.color === cur);
+            });
+            document.getElementById('colorModal').classList.add('show');
+        }
+        
+        function closeColorModal(event) {
+            if (event) { event.preventDefault(); event.stopPropagation(); }
+            document.getElementById('colorModal').classList.remove('show');
+        }
+        
+        function selectColor(color) {
+            if (!currentModalRole) return;
+            document.querySelectorAll('.color-option-modal').forEach(o => o.classList.remove('selected'));
+            document.querySelector(`.color-option-modal[data-color="${color}"]`).classList.add('selected');
+            
+            roleColors[currentModalRole] = color;
+            document.getElementById('colorsInput').value = JSON.stringify(roleColors);
+            
+            document.querySelectorAll(`.color-preview[data-role="${currentModalRole}"]`).forEach(el => {
+                el.style.background = color;
+                el.style.borderColor = color === '#ffffff' ? '#ccc' : color;
+            });
+            
+            setTimeout(() => closeColorModal(null), 300);
+        }
+        
+        // 초기화
+        document.getElementById('colorsInput').value = JSON.stringify(roleColors);
+        document.getElementById('gendersInput').value = JSON.stringify(roleGenders);
+        toggleTTS();
     </script>
 </body>
 </html>

@@ -6,354 +6,115 @@
     <title>Script Mate - 연습 중</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        :root {
-            --font-size: 18px;  /* 기본 18px */
-            --message-delay: 500;  /* 기본 0.5초 */
-        }
-        
+        :root { --font-size: 18px; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-            background: #bacee0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh;
-            height: 100dvh; /* 모바일 주소창 고려 */
-            overflow: hidden; /* 스크롤 방지 */
-            position: fixed; /* 모바일에서 화면 고정 */
-            width: 100%;
-            -webkit-overflow-scrolling: touch;
+            background: #bacee0; display: flex; flex-direction: column; 
+            height: 100vh; height: 100dvh; overflow: hidden; position: fixed; width: 100%;
         }
-        
         .top-bar { 
-            background: white; 
-            padding: 12px 16px; 
-            border-bottom: 2px solid #e0e0e0; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            flex-shrink: 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            gap: 8px;
+            background: white; padding: 12px 16px; border-bottom: 2px solid #e0e0e0;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 100; gap: 8px;
         }
-        
         .top-bar button { 
-            background: #222; 
-            color: white; 
-            border: none; 
-            padding: 10px 16px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
+            background: #222; color: white; border: none; padding: 10px 16px;
+            border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
         }
-        
         .top-bar .filename {
-            font-weight: bold;
-            font-size: 14px;
-            flex: 1;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            padding: 0 8px;
-            min-width: 0;
+            font-weight: bold; font-size: 14px; flex: 1; text-align: center;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
         }
+        .settings-btn { background: #666 !important; padding: 10px 12px !important; font-size: 18px !important; }
         
-        /* 설정 버튼 */
-        .settings-btn {
-            background: #666 !important;
-            padding: 10px 12px !important;
-            font-size: 18px !important;
-        }
-        
-        /* 설정 패널 */
         .settings-panel {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 300px;
-            height: 100%;
-            background: white;
-            box-shadow: -4px 0 12px rgba(0,0,0,0.2);
-            z-index: 200;
-            transition: right 0.3s ease;
-            overflow-y: auto;
+            position: fixed; top: 0; right: -100%; width: 300px; height: 100%;
+            background: white; box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            z-index: 200; transition: right 0.3s ease; overflow-y: auto;
         }
+        .settings-panel.open { right: 0; }
+        .sh { padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;
+            display: flex; justify-content: space-between; align-items: center; }
+        .sh h3 { font-size: 18px; margin: 0; }
+        .cb { background: none; border: none; font-size: 24px; cursor: pointer; color: #666;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .sc { padding: 24px; }
+        .si { margin-bottom: 28px; }
+        .sl { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: block; color: #333; }
+        .sv { font-size: 20px; font-weight: bold; color: #007bff; margin-bottom: 8px; display: block; transition: color 0.3s; }
+        .sctrl { display: flex; gap: 8px; }
+        .sb { flex: 1; padding: 12px; background: #f0f0f0; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer; }
+        .sb:active { background: #ddd; }
         
-        .settings-panel.open {
-            right: 0;
-        }
+        .tr { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+        .ts { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+        .ts input { opacity: 0; width: 0; height: 0; }
+        .tsl { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc; border-radius: 28px; cursor: pointer; transition: 0.3s; }
+        .tsl::before { content: ''; position: absolute; height: 22px; width: 22px;
+            left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        .ts input:checked + .tsl { background: #007bff; }
+        .ts input:checked + .tsl::before { transform: translateX(24px); }
         
-        .settings-header {
-            padding: 20px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .sw { margin-top: 12px; }
+        .sw.hd { display: none; }
+        .ss { width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
+            background: #ddd; border-radius: 3px; outline: none; }
+        .ss::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px;
+            background: #007bff; border-radius: 50%; cursor: pointer; }
+        .srl { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 4px; }
         
-        .settings-header h3 {
-            font-size: 18px;
-            margin: 0;
-        }
-        
-        .close-settings {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .settings-content {
-            padding: 24px;
-        }
-        
-        .setting-item {
-            margin-bottom: 28px;
-        }
-        
-        .setting-label {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: block;
-            color: #333;
-        }
-        
-        .setting-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 8px;
-            display: block;
-            transition: color 0.3s ease; /* 색상 변경 애니메이션 */
-        }
-        
-        .setting-controls {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .setting-btn {
-            flex: 1;
-            padding: 12px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .setting-btn:active {
-            background: #ddd;
-        }
-        
-        /* 오버레이 */
         .settings-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 199;
-            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 199; display: none;
         }
-        
-        .settings-overlay.show {
-            display: block;
-        }
+        .settings-overlay.show { display: block; }
         
         #chat-window { 
-            flex: 1; 
-            overflow-y: auto; 
-            overflow-x: hidden;
-            padding: 16px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px;
-            -webkit-overflow-scrolling: touch;
+            flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch;
         }
-        
         .msg { 
-            max-width: 85%; 
-            padding: 14px 16px; 
-            border-radius: 18px; 
-            line-height: 1.6; 
-            font-size: var(--font-size, 16px); /* 동적 폰트 크기 */
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            opacity: 0;
-            transform: translateY(10px);
+            max-width: 85%; padding: 14px 16px; border-radius: 18px; line-height: 1.6;
+            font-size: var(--font-size); word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); opacity: 0; transform: translateY(10px);
         }
-        
-        /* 애니메이션 클래스 */
-        .msg.animate {
-            animation: slideIn 0.4s ease-out forwards;
-        }
-        
-        @keyframes slideIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .bot { 
-            align-self: flex-start; 
-            background: white; 
-            border-bottom-left-radius: 4px;
-        }
-        
-        .user { 
-            align-self: flex-end; 
-            background: #fee500; 
-            border-bottom-right-radius: 4px;
-        }
-        
-        .action { 
-            align-self: center; 
-            background: rgba(0,0,0,0.08); 
-            font-size: var(--font-size, 18px); /* 지문도 동일 크기 */
-            border-radius: 20px; 
-            padding: 8px 16px;
-            max-width: 90%;
-            text-align: center;
-        }
-        
-        .role-label { 
-            font-size: calc(var(--font-size, 18px) * 0.75); /* 폰트의 75% 크기 */
-            font-weight: 700; 
-            margin-bottom: 6px; 
-            display: block; 
-            color: #555; 
-            border-bottom: 1px solid rgba(0,0,0,0.08); 
-            padding-bottom: 4px;
-        }
-        
-        .answer-box { 
-            margin-top: 10px; 
-            font-size: calc(var(--font-size, 18px) * 0.85); /* 폰트의 85% 크기 */
-            border-top: 1px solid rgba(0,0,0,0.15); 
-            padding-top: 10px; 
-            line-height: 1.5;
-        }
-        
+        .msg.animate { animation: slideIn 0.4s ease-out forwards; }
+        @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+        .bot { align-self: flex-start; background: white; border-bottom-left-radius: 4px; }
+        .user { align-self: flex-end; background: #fee500; border-bottom-right-radius: 4px; }
+        .action { align-self: center; background: rgba(0,0,0,0.08); font-size: var(--font-size);
+            border-radius: 20px; padding: 8px 16px; max-width: 90%; text-align: center; }
+        .role-label { font-size: calc(var(--font-size) * 0.75); font-weight: 700; margin-bottom: 6px;
+            display: block; color: #555; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 4px; }
+        .answer-box { margin-top: 10px; font-size: calc(var(--font-size) * 0.85);
+            border-top: 1px solid rgba(0,0,0,0.15); padding-top: 10px; line-height: 1.5; }
         .correct { color: #00aa00; font-weight: bold; }
         .wrong { color: #dd0000; }
+        .msg.speaking { box-shadow: 0 0 0 2px #007bff, 0 2px 8px rgba(0,123,255,0.3); }
         
         .input-area { 
-            background: white; 
-            padding: 12px; 
-            display: flex; 
-            gap: 8px; 
-            border-top: 2px solid #e0e0e0;
-            align-items: flex-end;
-            flex-shrink: 0;
-            position: sticky;
-            bottom: 0;
+            background: white; padding: 12px; display: flex; gap: 8px;
+            border-top: 2px solid #e0e0e0; align-items: flex-end; flex-shrink: 0;
         }
-        
-        .input-wrapper {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
+        .iw { flex: 1; position: relative; display: flex; align-items: center; }
         textarea { 
-            flex: 1;
-            width: 100%;
-            min-height: 44px; /* 터치 친화적 */
-            max-height: 100px;
-            font-size: 16px; /* iOS 확대 방지 */
-            padding: 12px 40px 12px 12px; /* 오른쪽에 X 버튼 공간 */
-            border-radius: 12px; 
-            border: 1px solid #ddd; 
-            resize: none; 
-            outline: none;
-            font-family: inherit;
+            flex: 1; width: 100%; min-height: 44px; max-height: 100px;
+            font-size: 16px; padding: 12px 40px 12px 12px; border-radius: 12px;
+            border: 1px solid #ddd; resize: none; outline: none; font-family: inherit;
         }
-        
-        .clear-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #ccc;
-            border: none;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            line-height: 1;
-            padding: 0;
-            transition: background 0.2s;
-        }
-        
-        .clear-btn:hover {
-            background: #999;
-        }
-        
-        .clear-btn:active {
-            background: #666;
-        }
-        
-        .clear-btn.show {
-            display: flex;
-        }
-        
-        .btn-container {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        
-        .send-btn, .next-btn { 
-            padding: 0 20px; 
-            height: 44px; 
-            border-radius: 12px; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 15px;
-            white-space: nowrap;
-        }
-        
-        .send-btn {
-            background: #fee500;
-        }
-        
-        .next-btn {
-            background: #007bff;
-            color: white;
-        }
-        
-        /* 키보드 올라올 때 대응 */
-        @supports (-webkit-touch-callout: none) {
-            body {
-                height: -webkit-fill-available;
-            }
-        }
+        .xb { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px; border-radius: 50%; background: #ccc;
+            border: none; cursor: pointer; display: none; align-items: center;
+            justify-content: center; color: white; font-size: 14px; line-height: 1; padding: 0; }
+        .xb.show { display: flex; }
+        .bc { display: flex; flex-direction: column; gap: 6px; }
+        .sendb, .nextb { padding: 0 20px; height: 44px; border-radius: 12px;
+            border: none; cursor: pointer; font-weight: bold; font-size: 15px; white-space: nowrap; }
+        .sendb { background: #fee500; }
+        .nextb { background: #007bff; color: white; }
+        @supports (-webkit-touch-callout: none) { body { height: -webkit-fill-available; } }
     </style>
 </head>
 <body>
@@ -364,438 +125,197 @@
     <button class="settings-btn" onclick="toggleSettings()">☰</button>
 </div>
 
-<!-- 설정 오버레이 -->
-<div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
-
-<!-- 설정 패널 -->
-<div class="settings-panel" id="settingsPanel">
-    <div class="settings-header">
-        <h3>⚙️ 설정</h3>
-        <button class="close-settings" onclick="toggleSettings()">✕</button>
-    </div>
-    <div class="settings-content">
-        <!-- 대사 속도 -->
-        <div class="setting-item">
-            <label class="setting-label">대사 속도</label>
-            <span class="setting-value" id="speedValue">0.5초</span>
-            <div class="setting-controls">
-                <button class="setting-btn" onclick="changeSpeed(-1); event.stopPropagation();">빠르게 -</button>
-                <button class="setting-btn" onclick="changeSpeed(1); event.stopPropagation();">느리게 +</button>
+<div class="settings-overlay" id="overlay" onclick="toggleSettings()"></div>
+<div class="settings-panel" id="panel">
+    <div class="sh"><h3>⚙️ 설정</h3><button class="cb" onclick="toggleSettings()">✕</button></div>
+    <div class="sc">
+        <div class="si">
+            <label class="sl">🔊 음성 지원</label>
+            <div class="tr">
+                <label class="ts"><input type="checkbox" id="ttsSwitch" onchange="toggleTTS()"><span class="tsl"></span></label>
+                <span id="ttsLbl">OFF</span>
             </div>
-            <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                범위: 0.2초 ~ 2.0초
+            <div class="sw hd" id="spdW">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <span style="font-size:14px;font-weight:500;">음성 속도</span>
+                    <span style="font-size:16px;font-weight:700;color:#007bff;" id="spdV">1.2x</span>
+                </div>
+                <input type="range" class="ss" id="spdS" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
+                <div class="srl"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
             </div>
         </div>
-        
-        <!-- 폰트 크기 -->
-        <div class="setting-item">
-            <label class="setting-label">폰트 크기</label>
-            <span class="setting-value" id="fontValue">18px</span>
-            <div class="setting-controls">
-                <button class="setting-btn" onclick="changeFontSize(-2); event.stopPropagation();">A-</button>
-                <button class="setting-btn" onclick="changeFontSize(2); event.stopPropagation();">A+</button>
+        <div class="si">
+            <label class="sl">대사 스크롤 속도</label>
+            <span class="sv" id="dV">0.5초</span>
+            <div class="sctrl">
+                <button class="sb" onclick="chgD(-1);event.stopPropagation()">빠르게 -</button>
+                <button class="sb" onclick="chgD(1);event.stopPropagation()">느리게 +</button>
             </div>
-            <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                범위: 12px ~ 28px
-            </div>
+            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 0.2초 ~ 2.0초</div>
+            <div style="margin-top:4px;font-size:12px;color:#999;" id="dN"></div>
         </div>
-        
-        <!-- 초기화 버튼 -->
-        <button class="setting-btn" onclick="resetSettings(); event.stopPropagation();" style="width: 100%; background: #fee500; margin-top: 20px;">
-            🔄 기본값으로 초기화
-        </button>
+        <div class="si">
+            <label class="sl">폰트 크기</label>
+            <span class="sv" id="fV">18px</span>
+            <div class="sctrl">
+                <button class="sb" onclick="chgF(-2);event.stopPropagation()">A-</button>
+                <button class="sb" onclick="chgF(2);event.stopPropagation()">A+</button>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 12px ~ 28px</div>
+        </div>
+        <button class="sb" onclick="resetA();event.stopPropagation()" style="width:100%;background:#fee500;margin-top:20px;">🔄 기본값 초기화</button>
     </div>
 </div>
 
 <div id="chat-window"></div>
 
 <div class="input-area">
-    <div class="input-wrapper">
-        <textarea id="userInput" placeholder="대사 입력 (숫자로 이동)"></textarea>
-        <button class="clear-btn" id="clearBtn" onclick="clearInput()">✕</button>
+    <div class="iw">
+        <textarea id="inp" placeholder="대사 입력 (숫자로 이동)"></textarea>
+        <button class="xb" id="xBtn" onclick="clr()">✕</button>
     </div>
-    <div class="btn-container">
-        <button class="send-btn" onclick="handleInput()">전송</button>
-        <button class="next-btn" onclick="skipToNext()">다음</button>
+    <div class="bc">
+        <button class="sendb" onclick="handleInput()">전송</button>
+        <button class="nextb" onclick="skip()">다음</button>
     </div>
 </div>
 
 <script>
-    const script = JSON.parse('{{ script | tojson | safe }}');
-    const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
-    const roleColors = JSON.parse('{{ colors | safe }}');
+    let sd=[], mr=[], rc={}, rg={};
+    try{sd=JSON.parse('{{ script | tojson | safe }}');}catch(e){}
+    try{mr=JSON.parse('{{ my_roles | tojson | safe }}');}catch(e){}
+    try{rc=JSON.parse('{{ colors | safe }}');}catch(e){}
+    try{rg=JSON.parse('{{ genders | safe }}');}catch(e){}
     
-    let currentIdx = 0;
-    let myTurnIdx = null;
-    let isComposing = false;
-    let currentFontSize = 18; // 기본 18px
-    let messageDelay = 500; // 기본 0.5초 (밀리초)
+    let ttsOn='{{tts_enabled}}'==='true', ttsSpd=parseFloat('{{tts_speed}}')||1.2;
+    let ci=0, mti=null, comp=false, fs=18, dl=500, aud=null, busy=false;
+    const inp=document.getElementById('inp'), chat=document.getElementById('chat-window'), xBtn=document.getElementById('xBtn');
 
-    const inputEl = document.getElementById('userInput');
-    const chatWindow = document.getElementById('chat-window');
-    const clearBtn = document.getElementById('clearBtn');
+    // TTS
+    function speak(text,role){
+        return new Promise(res=>{
+            if(!ttsOn||!text?.trim()){res();return;}
+            if(aud){aud.pause();aud=null;}
+            const g=rg[role]||'female';
+            aud=new Audio(`/tts?text=${encodeURIComponent(text)}&gender=${g}&speed=${ttsSpd}`);
+            aud.onended=()=>{aud=null;res();};
+            aud.onerror=()=>{aud=null;res();};
+            aud.play().catch(()=>{aud=null;res();});
+        });
+    }
+    function toggleTTS(){
+        ttsOn=document.getElementById('ttsSwitch').checked; updUI();
+        if(!ttsOn&&aud){aud.pause();aud=null;}
+    }
+    function updUI(){
+        document.getElementById('ttsLbl').textContent=ttsOn?'ON':'OFF';
+        document.getElementById('spdW').classList.toggle('hd',!ttsOn);
+        document.getElementById('dN').textContent=ttsOn?'🔊 음성 모드 - 음성 완료 후 자동 진행':'';
+    }
+    function updSpd(v){ttsSpd=parseFloat(v);document.getElementById('spdV').textContent=ttsSpd.toFixed(1)+'x';}
 
-    // ============================================
-    // 설정 불러오기 및 적용
-    // ============================================
-    function loadSettings() {
-        // 폰트 크기
-        const savedFontSize = localStorage.getItem('scriptMateFontSize');
-        if (savedFontSize) {
-            currentFontSize = parseInt(savedFontSize);
-        }
-        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
-        updateFontDisplay();
-        
-        // 대사 속도
-        const savedDelay = localStorage.getItem('scriptMateDelay');
-        if (savedDelay) {
-            messageDelay = parseInt(savedDelay);
-        }
-        document.documentElement.style.setProperty('--message-delay', messageDelay);
-        updateSpeedDisplay();
+    // 설정
+    function loadS(){
+        const sf=localStorage.getItem('smF');if(sf)fs=parseInt(sf);
+        document.documentElement.style.setProperty('--font-size',fs+'px');
+        document.getElementById('fV').textContent=fs+'px';
+        const sd2=localStorage.getItem('smD');if(sd2)dl=parseInt(sd2);
+        document.getElementById('dV').textContent=(dl/1000).toFixed(1)+'초';
+        document.getElementById('ttsSwitch').checked=ttsOn;updUI();
+        document.getElementById('spdS').value=ttsSpd;
+        document.getElementById('spdV').textContent=ttsSpd.toFixed(1)+'x';
+    }
+    function toggleSettings(){
+        document.getElementById('panel').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
+    function chgD(d){dl+=d*100;dl=Math.max(200,Math.min(2000,dl));localStorage.setItem('smD',dl);
+        document.getElementById('dV').textContent=(dl/1000).toFixed(1)+'초';fl('dV');}
+    function chgF(d){fs+=d;fs=Math.max(12,Math.min(28,fs));
+        document.documentElement.style.setProperty('--font-size',fs+'px');
+        localStorage.setItem('smF',fs);document.getElementById('fV').textContent=fs+'px';fl('fV');}
+    function resetA(){fs=18;dl=500;document.documentElement.style.setProperty('--font-size','18px');
+        localStorage.setItem('smF','18');localStorage.setItem('smD','500');
+        document.getElementById('fV').textContent='18px';document.getElementById('dV').textContent='0.5초';fl('fV');fl('dV');}
+    function fl(id){const e=document.getElementById(id);e.style.color='#00aa00';setTimeout(()=>e.style.color='#007bff',300);}
+    
+    loadS();
+
+    // 입력
+    inp.addEventListener('compositionstart',()=>comp=true);
+    inp.addEventListener('compositionend',()=>comp=false);
+    inp.addEventListener('input',()=>xBtn.classList.toggle('show',!!inp.value.trim()));
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!comp){e.preventDefault();handleInput();}});
+    function clr(){inp.value='';xBtn.classList.remove('show');inp.focus();}
+    function norm(t){return t?t.replace(/\([^)]*\)/g,'').replace(/[^a-zA-Z0-9가-힣]/g,'').toLowerCase().trim():'';}
+
+    function addMsg(text,type,role,idx,extra=''){
+        const div=document.createElement('div');div.className=`msg ${type}`;
+        if(rc[role]&&type!=='action')div.style.background=rc[role];
+        div.innerHTML=`<span class="role-label">[${idx}] ${role}</span>${text}${extra}`;
+        chat.appendChild(div);
+        setTimeout(()=>div.classList.add('animate'),10);
+        setTimeout(()=>chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}),100);
+        return div;
     }
 
-    // 설정 패널 토글
-    function toggleSettings() {
-        const panel = document.getElementById('settingsPanel');
-        const overlay = document.getElementById('settingsOverlay');
-        
-        if (panel.classList.contains('open')) {
-            panel.classList.remove('open');
-            overlay.classList.remove('show');
-        } else {
-            panel.classList.add('open');
-            overlay.classList.add('show');
-        }
-    }
-
-    // 대사 속도 변경
-    function changeSpeed(delta) {
-        messageDelay += delta * 100; // 100ms 단위 (delta는 1 또는 -1)
-        
-        // 범위: 0.2초 ~ 2.0초
-        if (messageDelay < 200) messageDelay = 200;
-        if (messageDelay > 2000) messageDelay = 2000;
-        
-        // 저장 및 표시 업데이트
-        localStorage.setItem('scriptMateDelay', messageDelay);
-        updateSpeedDisplay();
-        
-        // 즉시 피드백 (배경색 변경)
-        const speedValue = document.getElementById('speedValue');
-        speedValue.style.color = '#00aa00';
-        setTimeout(() => {
-            speedValue.style.color = '#007bff';
-        }, 300);
-        
-        console.log('속도 변경:', messageDelay + 'ms'); // 디버깅용
-    }
-
-    // 속도 표시 업데이트
-    function updateSpeedDisplay() {
-        const seconds = (messageDelay / 1000).toFixed(1);
-        document.getElementById('speedValue').textContent = seconds + '초';
-    }
-
-    // 폰트 크기 변경
-    function changeFontSize(delta) {
-        currentFontSize += delta;
-        
-        // 범위: 12px ~ 28px
-        if (currentFontSize < 12) currentFontSize = 12;
-        if (currentFontSize > 28) currentFontSize = 28;
-        
-        // CSS 변수 업데이트 (모든 요소에 즉시 적용)
-        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
-        
-        // 저장 및 표시 업데이트
-        localStorage.setItem('scriptMateFontSize', currentFontSize);
-        updateFontDisplay();
-        
-        // 즉시 피드백 (배경색 변경)
-        const fontValue = document.getElementById('fontValue');
-        fontValue.style.color = '#00aa00';
-        setTimeout(() => {
-            fontValue.style.color = '#007bff';
-        }, 300);
-        
-        console.log('폰트 크기 변경:', currentFontSize + 'px'); // 디버깅용
-    }
-
-    // 폰트 표시 업데이트
-    function updateFontDisplay() {
-        document.getElementById('fontValue').textContent = currentFontSize + 'px';
-    }
-
-    // 설정 초기화
-    function resetSettings() {
-        currentFontSize = 18;
-        messageDelay = 500;
-        
-        document.documentElement.style.setProperty('--font-size', '18px');
-        localStorage.setItem('scriptMateFontSize', '18');
-        localStorage.setItem('scriptMateDelay', '500');
-        
-        updateFontDisplay();
-        updateSpeedDisplay();
-        
-        // 시각적 피드백 (초록색 깜빡)
-        const fontValue = document.getElementById('fontValue');
-        const speedValue = document.getElementById('speedValue');
-        fontValue.style.color = '#00aa00';
-        speedValue.style.color = '#00aa00';
-        setTimeout(() => {
-            fontValue.style.color = '#007bff';
-            speedValue.style.color = '#007bff';
-        }, 500);
-    }
-
-    // 페이지 로드 시 설정 불러오기
-    loadSettings();
-
-    // 한글 입력 중 엔터 방지
-    inputEl.addEventListener('compositionstart', () => isComposing = true);
-    inputEl.addEventListener('compositionend', () => isComposing = false);
-
-    // 입력창 내용 변경 시 X 버튼 표시/숨김
-    inputEl.addEventListener('input', () => {
-        if (inputEl.value.trim()) {
-            clearBtn.classList.add('show');
-        } else {
-            clearBtn.classList.remove('show');
-        }
-    });
-
-    // 엔터키 처리
-    inputEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
-            e.preventDefault();
-            handleInput();
-        }
-    });
-
-    // 전체 삭제 함수
-    function clearInput() {
-        inputEl.value = '';
-        clearBtn.classList.remove('show');
-        inputEl.focus();
-    }
-
-    // 정규화 함수
-    function normalize(text) {
-        if (!text) return "";
-        return text.replace(/\([^)]*\)/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').toLowerCase().trim();
-    }
-
-    // 메시지 추가 (애니메이션 포함)
-    function addMessage(text, type, role, idx, extra="") {
-        const div = document.createElement('div');
-        div.className = `msg ${type}`;
-        
-        // 배역별 색상 적용 (모든 타입에 적용)
-        if (roleColors[role] && type !== 'action') {
-            div.style.background = roleColors[role];
-        }
-        
-        div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}${extra}`;
-        chatWindow.appendChild(div);
-        
-        // 애니메이션 트리거 (약간의 지연 후)
-        setTimeout(() => {
-            div.classList.add('animate');
-        }, 10);
-        
-        // 스크롤 (애니메이션 후)
-        setTimeout(() => {
-            chatWindow.scrollTo({
-                top: chatWindow.scrollHeight,
-                behavior: 'smooth'
-            });
-        }, 100);
-    }
-
-    // 다음 내 차례까지 자동 진행 (설정된 딜레이)
-    async function showNext() {
-        while (currentIdx < script.length) {
-            const item = script[currentIdx];
-            const isMyTurn = myRoles.some(role => item.role.includes(role));
-            
-            if (isMyTurn) {
-                myTurnIdx = currentIdx;
-                return;
+    async function showNext(){
+        if(busy)return;busy=true;
+        try{
+            while(ci<sd.length){
+                const it=sd[ci];
+                if(mr.some(r=>it.role.includes(r))){mti=ci;inp.focus();busy=false;return;}
+                const type=it.role==="(지문)"?"action":"bot";
+                const el=addMsg(it.text,type,it.role,it.idx);ci++;
+                if(ttsOn&&it.role!=="(지문)"&&it.text.trim()){
+                    el.classList.add('speaking');await speak(it.text,it.role);
+                    el.classList.remove('speaking');await new Promise(r=>setTimeout(r,150));
+                }else{await new Promise(r=>setTimeout(r,dl));}
             }
-            
-            const type = item.role === "(지문)" ? "action" : "bot";
-            addMessage(item.text, type, item.role, item.idx);
-            currentIdx++;
-            
-            // 설정된 딜레이만큼 대기
-            await new Promise(resolve => setTimeout(resolve, messageDelay));
-        }
-        
-        // 모든 대사 끝
-        if (currentIdx >= script.length) {
-            const endDiv = document.createElement('div');
-            endDiv.className = 'msg action animate';
-            endDiv.innerHTML = '🎉 연습 완료!';
-            chatWindow.appendChild(endDiv);
-            myTurnIdx = null;
-        }
-    }
-
-    // 입력 처리
-    function handleInput() {
-        const rawVal = inputEl.value.trim();
-
-        // 1. 숫자 입력 시 해당 인덱스로 점프
-        if (/^\d+$/.test(rawVal)) {
-            jumpToIndex(parseInt(rawVal));
-            inputEl.value = "";
-            clearBtn.classList.remove('show');
-            return;
-        }
-
-        // 현재 내 차례가 아니면 무시
-        if (myTurnIdx === null) {
-            inputEl.value = "";
-            clearBtn.classList.remove('show');
-            return;
-        }
-
-        const target = script[myTurnIdx];
-
-        // 2. 빈 엔터 입력 시 힌트(정답) 표시
-        if (!rawVal) {
-            const hintBox = `
-                <div class="answer-box wrong">
-                    💡 힌트 (정답): <br>
-                    <strong>${target.text}</strong>
-                </div>
-            `;
-            addMessage("(내 대사 확인)", 'user', target.role, target.idx, hintBox);
-            return;
-        }
-
-        // 3. 텍스트 입력 시 유사도 검사
-        const similarity = getSimilarity(normalize(rawVal), normalize(target.text));
-        const isCorrect = similarity >= 0.7;
-
-        let resultBox = "";
-        if (isCorrect) {
-            resultBox = `<div class="answer-box correct">✓ 정답입니다!</div>`;
-        } else {
-            resultBox = `
-                <div class="answer-box wrong">
-                    ✗ 틀렸습니다! (유사도: ${(similarity * 100).toFixed(0)}%)<br>
-                    <strong>정답: ${target.text}</strong>
-                </div>
-            `;
-        }
-
-        addMessage(rawVal, 'user', target.role, target.idx, resultBox);
-        
-        if (isCorrect) {
-            inputEl.value = '';
-            clearBtn.classList.remove('show');
-            currentIdx = myTurnIdx + 1;
-            myTurnIdx = null;
-            setTimeout(showNext, 300);
-        }
-    }
-
-    // 다음 버튼 - 내 차례로 건너뛰기
-    function skipToNext() {
-        if (myTurnIdx !== null) {
-            // 현재 내 차례면 정답 표시하고 넘어가기
-            const target = script[myTurnIdx];
-            const hintBox = `<div class="answer-box">⏭️ 건너뛰기<br><strong>${target.text}</strong></div>`;
-            addMessage("(건너뛰기)", 'user', target.role, target.idx, hintBox);
-            
-            inputEl.value = '';
-            clearBtn.classList.remove('show');
-            currentIdx = myTurnIdx + 1;
-            myTurnIdx = null;
-            setTimeout(showNext, 300);
-        } else {
-            // 내 차례 아니면 다음 내 차례 찾기
-            showNext();
-        }
-    }
-
-    // 특정 인덱스로 점프
-    function jumpToIndex(num) {
-        // script 내의 idx 값과 입력한 숫자가 일치하는 요소 찾기
-        const foundIndex = script.findIndex(item => parseInt(item.idx) === num);
-        
-        if (foundIndex === -1) {
-            alert(`번호 ${num}을(를) 찾을 수 없습니다.`);
-            return;
-        }
-
-        // 화면 초기화
-        chatWindow.innerHTML = '';
-        currentIdx = foundIndex;
-        myTurnIdx = null;
-        
-        // 액션 메시지 추가
-        const jumpDiv = document.createElement('div');
-        jumpDiv.className = 'msg action';
-        jumpDiv.innerHTML = `🚩 [${num}]번으로 이동`;
-        chatWindow.appendChild(jumpDiv);
-        
-        showNext();
-    }
-
-    // 유사도 계산
-    function getSimilarity(s1, s2) {
-        if (s1 === s2) return 1.0;
-        let longer = s1.length > s2.length ? s1 : s2;
-        let shorter = s1.length > s2.length ? s2 : s1;
-        if (longer.length === 0) return 1.0;
-        return (longer.length - editDistance(longer, shorter)) / longer.length;
-    }
-
-    // 편집 거리 계산
-    function editDistance(s1, s2) {
-        let costs = [];
-        for (let i = 0; i <= s1.length; i++) {
-            let lastValue = i;
-            for (let j = 0; j <= s2.length; j++) {
-                if (i === 0) costs[j] = j;
-                else if (j > 0) {
-                    let newValue = costs[j - 1];
-                    if (s1.charAt(i - 1) !== s2.charAt(j - 1))
-                        newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                    costs[j - 1] = lastValue;
-                    lastValue = newValue;
-                }
+            if(ci>=sd.length){
+                const e=document.createElement('div');e.className='msg action animate';
+                e.innerHTML='🎉 연습 완료!';chat.appendChild(e);
+                chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});mti=null;
             }
-            if (i > 0) costs[s2.length] = lastValue;
-        }
-        return costs[s2.length];
+        }catch(e){console.error(e);}
+        busy=false;
     }
 
-    // 시작
-    showNext();
-    
-    // 포커스 유지
-    inputEl.focus();
-    
-    // ============================================
-    // 새로고침 감지 - 홈으로 리다이렉트
-    // ============================================
-    // performance API로 새로고침 감지
-    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
-        // 새로고침된 경우 홈으로
-        window.location.href = '/';
+    function handleInput(){
+        const v=inp.value.trim();
+        if(/^\d+$/.test(v)){jump(parseInt(v));inp.value='';xBtn.classList.remove('show');return;}
+        if(mti===null){inp.value='';xBtn.classList.remove('show');return;}
+        const t=sd[mti];
+        if(!v){addMsg("(내 대사 확인)",'user',t.role,t.idx,
+            `<div class="answer-box wrong">💡 힌트: <br><strong>${t.text}</strong></div>`);return;}
+        const sim=getSim(norm(v),norm(t.text)),ok=sim>=0.7;
+        const rb=ok?`<div class="answer-box correct">✓ 정답!</div>`:
+            `<div class="answer-box wrong">✗ 틀림 (${(sim*100).toFixed(0)}%)<br><strong>정답: ${t.text}</strong></div>`;
+        addMsg(v,'user',t.role,t.idx,rb);
+        if(ok){inp.value='';xBtn.classList.remove('show');ci=mti+1;mti=null;setTimeout(showNext,300);}
     }
-    
-    // 또는 페이지 이탈 시도 시 경고 (선택사항)
-    // window.addEventListener('beforeunload', function(e) {
-    //     e.preventDefault();
-    //     e.returnValue = '연습을 종료하시겠습니까?';
-    // });
+    function skip(){
+        if(mti!==null){const t=sd[mti];addMsg("(건너뛰기)",'user',t.role,t.idx,
+            `<div class="answer-box">⏭️<br><strong>${t.text}</strong></div>`);
+            inp.value='';xBtn.classList.remove('show');ci=mti+1;mti=null;setTimeout(showNext,300);
+        }else showNext();
+    }
+    function jump(n){
+        const fi=sd.findIndex(i=>parseInt(i.idx)===n);
+        if(fi===-1){alert(`${n}번 없음`);return;}
+        if(aud){aud.pause();aud=null;}
+        chat.innerHTML='';ci=fi;mti=null;busy=false;
+        const d=document.createElement('div');d.className='msg action animate';
+        d.innerHTML=`🚩 [${n}]번으로 이동`;chat.appendChild(d);showNext();
+    }
+    function getSim(a,b){if(a===b)return 1;const l=a.length>b.length?a:b,s=a.length>b.length?b:a;
+        if(!l.length)return 1;return(l.length-ed(l,s))/l.length;}
+    function ed(a,b){let c=[];for(let i=0;i<=a.length;i++){let lv=i;for(let j=0;j<=b.length;j++){
+        if(i===0)c[j]=j;else if(j>0){let nv=c[j-1];if(a[i-1]!==b[j-1])nv=Math.min(nv,lv,c[j])+1;
+        c[j-1]=lv;lv=nv;}}if(i>0)c[b.length]=lv;}return c[b.length];}
+
+    showNext(); inp.focus();
+    if(performance.navigation.type===performance.navigation.TYPE_RELOAD)window.location.href='/';
 </script>
 </body>
 </html>

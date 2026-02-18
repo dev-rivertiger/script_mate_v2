@@ -226,6 +226,10 @@ venv/
 # Mac
 .DS_Store
 
+# TTS temp / cache
+tts_cache/
+*.mp3
+
 app.py
 NanumGothic.ttf
 preprocessing.py
