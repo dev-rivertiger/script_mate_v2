@@ -241,6 +241,25 @@
     </div>
 </div>
 
+<!-- 모바일 자동재생 잠금 해제용 시작 오버레이 -->
+<div id="startOverlay" style="
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,0.7);z-index:300;
+    display:none;align-items:center;justify-content:center;
+    flex-direction:column;gap:16px;
+">
+    <div style="background:white;padding:36px 32px;border-radius:20px;text-align:center;max-width:320px;width:90%;">
+        <div style="font-size:48px;margin-bottom:12px;">🎭</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:8px;">전체 읽기 시작</div>
+        <div style="font-size:14px;color:#666;margin-bottom:24px;">버튼을 눌러 음성 재생을 시작하세요</div>
+        <button id="startBtn" style="
+            width:100%;padding:16px;border:none;border-radius:12px;
+            background:#007bff;color:white;font-size:18px;font-weight:700;
+            cursor:pointer;
+        ">▶️ 재생 시작</button>
+    </div>
+</div>
+
 <div id="chat-window"></div>
 
 <div class="bottom-bar">
@@ -257,7 +276,11 @@
     let ttsOn = '{{ tts_enabled }}' === 'true';
     let ttsSpd = parseFloat('{{ tts_speed }}') || 1.2;
     let fontSize = 18, msgDelay = 500;
-    let paused = false, stopped = false, audio = null, running = false;
+    let paused = false, stopped = false, running = false;
+    
+    // 모바일 Audio 자동재생 해결: 단일 Audio 객체 재사용
+    const sharedAudio = new Audio();
+    let audioUnlocked = false;
     
     // 반복 설정
     let repeatMode = 'once';   // 'once' | 'count' | 'infinite'
@@ -328,7 +351,7 @@
     function toggleTTS() {
         ttsOn = document.getElementById('ttsSwitch').checked;
         updateTTSUI();
-        if (!ttsOn && audio) { audio.pause(); audio = null; }
+        if (!ttsOn) { sharedAudio.pause(); }
     }
     function updateTTSUI() {
         document.getElementById('ttsLabel').textContent = ttsOn ? 'ON' : 'OFF';
@@ -341,22 +364,35 @@
         document.getElementById('spdVal').textContent = ttsSpd.toFixed(1) + 'x';
     }
     
-    // TTS 재생 (괄호 제거 후)
+    // 모바일 Audio unlock (사용자 터치 이벤트 내에서 호출)
+    function unlockAudio() {
+        sharedAudio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqSAAAAAAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQZB8P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+        sharedAudio.play().then(() => {
+            sharedAudio.pause();
+            sharedAudio.currentTime = 0;
+            audioUnlocked = true;
+        }).catch(() => {});
+    }
+    
+    // TTS 재생 (괄호 제거, 단일 Audio 재사용)
     function speak(text, role) {
         return new Promise(resolve => {
             if (!ttsOn || !text?.trim()) { resolve(); return; }
-            if (audio) { audio.pause(); audio = null; }
             
-            // 괄호 안 지문 제거
             const cleanText = stripParentheses(text);
             if (!cleanText) { resolve(); return; }
             
             const gender = roleGenders[role] || 'female';
             const url = `/tts?text=${encodeURIComponent(cleanText)}&gender=${gender}&speed=${ttsSpd}`;
-            audio = new Audio(url);
-            audio.onended = () => { audio = null; resolve(); };
-            audio.onerror = () => { audio = null; resolve(); };
-            audio.play().catch(() => { audio = null; resolve(); });
+            
+            // 이전 재생 중단
+            sharedAudio.pause();
+            
+            sharedAudio.onended = () => { sharedAudio.onended = null; sharedAudio.onerror = null; resolve(); };
+            sharedAudio.onerror = () => { sharedAudio.onended = null; sharedAudio.onerror = null; resolve(); };
+            
+            sharedAudio.src = url;
+            sharedAudio.play().catch(() => { resolve(); });
         });
     }
 
@@ -419,16 +455,16 @@
         const btn = document.getElementById('pauseBtn');
         if (paused) {
             btn.textContent = '▶️ 재개'; btn.className = 'b-resume';
-            if (audio) audio.pause();
+            sharedAudio.pause();
         } else {
             btn.textContent = '⏸️ 일시정지'; btn.className = 'b-pause';
-            if (audio) audio.play();
+            if (ttsOn && sharedAudio.src) sharedAudio.play().catch(()=>{});
         }
     }
     
     function stopAndGoHome() {
         stopped = true;
-        if (audio) { audio.pause(); audio = null; }
+        sharedAudio.pause();
         location.href = '/';
     }
 
@@ -515,7 +551,19 @@
     // 시작
     // ============================================
     loadSettings();
-    run();
+    
+    // TTS ON이면 모바일 unlock 위해 시작 오버레이 표시
+    if (ttsOn) {
+        const overlay = document.getElementById('startOverlay');
+        overlay.style.display = 'flex';
+        document.getElementById('startBtn').addEventListener('click', function() {
+            unlockAudio();
+            overlay.style.display = 'none';
+            run();
+        });
+    } else {
+        run();
+    }
     
     if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
         window.location.href = '/';

@@ -188,29 +188,30 @@
     try{rg=JSON.parse('{{ genders | safe }}');}catch(e){}
     
     let ttsOn='{{tts_enabled}}'==='true', ttsSpd=parseFloat('{{tts_speed}}')||1.2;
-    let ci=0, mti=null, comp=false, fs=18, dl=500, aud=null, busy=false;
+    let ci=0, mti=null, comp=false, fs=18, dl=500, busy=false;
+    const sharedAudio = new Audio();
     const inp=document.getElementById('inp'), chat=document.getElementById('chat-window'), xBtn=document.getElementById('xBtn');
 
     // 괄호 지문 제거
     function stripParen(t){ return t?t.replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').trim():''; }
 
-    // TTS
+    // TTS (단일 Audio 재사용)
     function speak(text,role){
         return new Promise(res=>{
             if(!ttsOn||!text?.trim()){res();return;}
-            if(aud){aud.pause();aud=null;}
             const clean=stripParen(text);
             if(!clean){res();return;}
             const g=rg[role]||'female';
-            aud=new Audio(`/tts?text=${encodeURIComponent(clean)}&gender=${g}&speed=${ttsSpd}`);
-            aud.onended=()=>{aud=null;res();};
-            aud.onerror=()=>{aud=null;res();};
-            aud.play().catch(()=>{aud=null;res();});
+            sharedAudio.pause();
+            sharedAudio.onended=()=>{sharedAudio.onended=null;sharedAudio.onerror=null;res();};
+            sharedAudio.onerror=()=>{sharedAudio.onended=null;sharedAudio.onerror=null;res();};
+            sharedAudio.src=`/tts?text=${encodeURIComponent(clean)}&gender=${g}&speed=${ttsSpd}`;
+            sharedAudio.play().catch(()=>{res();});
         });
     }
     function toggleTTS(){
         ttsOn=document.getElementById('ttsSwitch').checked; updUI();
-        if(!ttsOn&&aud){aud.pause();aud=null;}
+        if(!ttsOn) sharedAudio.pause();
     }
     function updUI(){
         document.getElementById('ttsLbl').textContent=ttsOn?'ON':'OFF';
@@ -309,7 +310,7 @@
     function jump(n){
         const fi=sd.findIndex(i=>parseInt(i.idx)===n);
         if(fi===-1){alert(`${n}번 없음`);return;}
-        if(aud){aud.pause();aud=null;}
+        sharedAudio.pause();
         chat.innerHTML='';ci=fi;mti=null;busy=false;
         const d=document.createElement('div');d.className='msg action animate';
         d.innerHTML=`🚩 [${n}]번으로 이동`;chat.appendChild(d);showNext();

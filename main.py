@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Request, Form, BackgroundTasks
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import os
 import json
+import hashlib
 import asyncio
-import tempfile
 from pathlib import Path
 
 app = FastAPI()
@@ -15,6 +15,9 @@ app.add_middleware(SessionMiddleware, secret_key="script_mate_v2_2026_key_unique
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 SCRIPT_DIR = os.path.join(BASE_DIR, "scripts")
+TTS_CACHE_DIR = os.path.join(BASE_DIR, "tts_cache")
+
+os.makedirs(TTS_CACHE_DIR, exist_ok=True)
 
 # 한국어 음성 정의
 VOICES = {
@@ -23,51 +26,35 @@ VOICES = {
 }
 
 # ============================================
-# 🔊 TTS 엔드포인트 (임시파일 → 전송 후 삭제)
+# TTS 엔드포인트 (Edge TTS)
 # ============================================
 @app.get("/tts")
-async def tts_endpoint(
-    text: str,
-    gender: str = "female",
-    speed: float = 1.2,
-    background_tasks: BackgroundTasks = None
-):
+async def tts_endpoint(text: str, gender: str = "female", speed: float = 1.2):
+    """Edge TTS로 한국어 음성 생성 후 mp3 반환 (남/여 선택, 속도 조절, 캐시)"""
     try:
         import edge_tts
-
+        
+        # 음성 선택
         voice = VOICES.get(gender, VOICES["female"])
-
-        # 속도 변환
+        
+        # 속도를 edge-tts rate 포맷으로 변환 (1.0 = +0%, 1.5 = +50%, 0.5 = -50%)
         rate_percent = int((speed - 1.0) * 100)
         rate_str = f"+{rate_percent}%" if rate_percent >= 0 else f"{rate_percent}%"
-
-        # 🔥 임시 mp3 파일 생성
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-        tmp_path = tmp_file.name
-        tmp_file.close()
-
-        communicate = edge_tts.Communicate(
-            text=text,
-            voice=voice,
-            rate=rate_str
-        )
-        await communicate.save(tmp_path)
-
-        # 🔥 응답 완료 후 파일 삭제
-        def cleanup():
-            try:
-                if os.path.exists(tmp_path):
-                    os.remove(tmp_path)
-            except:
-                pass
-
-        background_tasks.add_task(cleanup)
-
+        
+        # 캐시 키 (텍스트 + 성별 + 속도)
+        cache_key = hashlib.md5(f"{text}_{gender}_{rate_str}".encode('utf-8')).hexdigest()
+        cache_path = os.path.join(TTS_CACHE_DIR, f"{cache_key}.mp3")
+        
+        # 캐시에 없으면 생성
+        if not os.path.exists(cache_path):
+            communicate = edge_tts.Communicate(text=text, voice=voice, rate=rate_str)
+            await communicate.save(cache_path)
+        
         return FileResponse(
-            tmp_path,
-            media_type="audio/mpeg"
+            cache_path, 
+            media_type="audio/mpeg",
+            headers={"Cache-Control": "public, max-age=86400"}
         )
-
     except ImportError:
         return JSONResponse(
             {"error": "edge-tts 미설치. pip install edge-tts 실행 필요"},
@@ -109,13 +96,7 @@ async def select_role(request: Request, mode: str = "practice"):
                 role_content = content_part.split(": ", 1)
                 role = role_content[0].strip()
                 text = role_content[1].strip() if len(role_content) > 1 else ""
-
-                script_data.append({
-                    "idx": idx_part,
-                    "role": role,
-                    "text": text
-                })
-
+                script_data.append({"idx": idx_part, "role": role, "text": text})
                 if role != "(지문)":
                     for r in role.split(','):
                         roles_found.add(r.strip())
@@ -130,8 +111,8 @@ async def select_role(request: Request, mode: str = "practice"):
 
 @app.post("/practice", response_class=HTMLResponse)
 async def practice(
-    request: Request,
-    filename: str = Form(...),
+    request: Request, 
+    filename: str = Form(...), 
     role: str = Form(...),
     mode: str = Form("practice"),
     colors: str = Form("{}"),
@@ -154,15 +135,10 @@ async def practice(
                 role_content = content_part.split(": ", 1)
                 role_name = role_content[0].strip()
                 text = role_content[1].strip() if len(role_content) > 1 else ""
-
-                script_data.append({
-                    "idx": idx_part,
-                    "role": role_name,
-                    "text": text
-                })
+                script_data.append({"idx": idx_part, "role": role_name, "text": text})
 
     template_name = "view.html" if mode == "view" else "practice.html"
-
+    
     return templates.TemplateResponse(template_name, {
         "request": request,
         "script": script_data,
