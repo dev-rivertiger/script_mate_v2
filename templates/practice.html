@@ -39,8 +39,8 @@
         .cb { background: none; border: none; font-size: 24px; cursor: pointer; color: #666;
             width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
         .sc { padding: 24px; }
-        .si { margin-bottom: 28px; }
-        .sl { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: block; color: #333; }
+        .si { margin-bottom: 24px; }
+        .sl { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: block; color: #333; }
         .sv { font-size: 20px; font-weight: bold; color: #007bff; margin-bottom: 8px; display: block; transition: color 0.3s; }
         .sctrl { display: flex; gap: 8px; }
         .sb { flex: 1; padding: 12px; background: #f0f0f0; border: none; border-radius: 8px;
@@ -191,13 +191,18 @@
     let ci=0, mti=null, comp=false, fs=18, dl=500, aud=null, busy=false;
     const inp=document.getElementById('inp'), chat=document.getElementById('chat-window'), xBtn=document.getElementById('xBtn');
 
+    // 괄호 지문 제거
+    function stripParen(t){ return t?t.replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').trim():''; }
+
     // TTS
     function speak(text,role){
         return new Promise(res=>{
             if(!ttsOn||!text?.trim()){res();return;}
             if(aud){aud.pause();aud=null;}
+            const clean=stripParen(text);
+            if(!clean){res();return;}
             const g=rg[role]||'female';
-            aud=new Audio(`/tts?text=${encodeURIComponent(text)}&gender=${g}&speed=${ttsSpd}`);
+            aud=new Audio(`/tts?text=${encodeURIComponent(clean)}&gender=${g}&speed=${ttsSpd}`);
             aud.onended=()=>{aud=null;res();};
             aud.onerror=()=>{aud=null;res();};
             aud.play().catch(()=>{aud=null;res();});
@@ -267,6 +272,7 @@
                 if(mr.some(r=>it.role.includes(r))){mti=ci;inp.focus();busy=false;return;}
                 const type=it.role==="(지문)"?"action":"bot";
                 const el=addMsg(it.text,type,it.role,it.idx);ci++;
+                // (지문)은 TTS 안 읽음
                 if(ttsOn&&it.role!=="(지문)"&&it.text.trim()){
                     el.classList.add('speaking');await speak(it.text,it.role);
                     el.classList.remove('speaking');await new Promise(r=>setTimeout(r,150));

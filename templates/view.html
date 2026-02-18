@@ -34,46 +34,47 @@
             z-index: 200; transition: right 0.3s ease; overflow-y: auto;
         }
         .settings-panel.open { right: 0; }
-        .settings-header {
+        .s-header {
             padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .settings-header h3 { font-size: 18px; margin: 0; }
+        .s-header h3 { font-size: 18px; margin: 0; }
         .close-btn {
             background: none; border: none; font-size: 24px; cursor: pointer;
             color: #666; width: 32px; height: 32px;
             display: flex; align-items: center; justify-content: center;
         }
-        .settings-content { padding: 24px; }
-        .setting-item { margin-bottom: 28px; }
-        .setting-label { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: block; color: #333; }
-        .setting-value {
+        .s-content { padding: 24px; }
+        .s-item { margin-bottom: 24px; }
+        .s-label { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: block; color: #333; }
+        .s-value {
             font-size: 20px; font-weight: bold; color: #007bff;
             margin-bottom: 8px; display: block; transition: color 0.3s;
         }
-        .setting-controls { display: flex; gap: 8px; }
-        .setting-btn {
+        .s-ctrl { display: flex; gap: 8px; }
+        .s-btn {
             flex: 1; padding: 12px; background: #f0f0f0; border: none;
             border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
         }
-        .setting-btn:active { background: #ddd; }
+        .s-btn:active { background: #ddd; }
         
-        .tts-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
-        .tswitch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
-        .tswitch input { opacity: 0; width: 0; height: 0; }
-        .tslider {
+        /* 토글 스위치 */
+        .t-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+        .t-sw { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+        .t-sw input { opacity: 0; width: 0; height: 0; }
+        .t-sl {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: #ccc; border-radius: 28px; cursor: pointer; transition: 0.3s;
         }
-        .tslider::before {
+        .t-sl::before {
             content: ''; position: absolute; height: 22px; width: 22px;
             left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;
         }
-        .tswitch input:checked + .tslider { background: #007bff; }
-        .tswitch input:checked + .tslider::before { transform: translateX(24px); }
+        .t-sw input:checked + .t-sl { background: #007bff; }
+        .t-sw input:checked + .t-sl::before { transform: translateX(24px); }
         
-        .speed-wrap { margin-top: 12px; }
-        .speed-wrap.hidden { display: none; }
+        .spd-wrap { margin-top: 12px; }
+        .spd-wrap.hidden { display: none; }
         .spd-slider {
             width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
             background: #ddd; border-radius: 3px; outline: none;
@@ -83,6 +84,28 @@
             background: #007bff; border-radius: 50%; cursor: pointer;
         }
         .spd-labels { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 4px; }
+        
+        /* 반복 설정 */
+        .repeat-wrap { margin-top: 12px; }
+        .repeat-wrap.hidden { display: none; }
+        .repeat-options { display: flex; gap: 8px; margin-top: 8px; }
+        .repeat-opt {
+            flex: 1; padding: 10px; border: 2px solid #ddd; background: white;
+            border-radius: 10px; text-align: center; cursor: pointer;
+            font-size: 14px; font-weight: 600; transition: all 0.2s;
+        }
+        .repeat-opt.active { border-color: #007bff; background: #e7f3ff; color: #007bff; }
+        .repeat-count-wrap { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+        .repeat-count-wrap.hidden { display: none; }
+        .repeat-count-input {
+            width: 60px; padding: 8px; border: 2px solid #ddd; border-radius: 8px;
+            font-size: 18px; font-weight: 700; text-align: center; outline: none;
+        }
+        .repeat-count-input:focus { border-color: #007bff; }
+        .repeat-status {
+            font-size: 13px; color: #666; margin-top: 8px; padding: 6px 10px;
+            background: #f8f9fa; border-radius: 8px;
+        }
         
         .settings-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -114,6 +137,14 @@
         }
         .msg.speaking { box-shadow: 0 0 0 2px #007bff, 0 2px 8px rgba(0,123,255,0.3); }
         
+        /* 라운드 구분선 */
+        .round-divider {
+            align-self: center; padding: 8px 20px; margin: 8px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border-radius: 20px; font-size: 14px; font-weight: 700;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+        }
+        
         .bottom-bar {
             background: white; padding: 10px 16px; border-top: 2px solid #e0e0e0;
             display: flex; justify-content: center; gap: 12px; flex-shrink: 0;
@@ -122,8 +153,9 @@
             padding: 10px 24px; border: none; border-radius: 10px;
             font-size: 15px; font-weight: 600; cursor: pointer;
         }
-        .bp { background: #ff6b6b; color: white; }
-        .br { background: #51cf66; color: white; }
+        .b-pause { background: #ff6b6b; color: white; }
+        .b-resume { background: #51cf66; color: white; }
+        .b-stop { background: #868e96; color: white; }
         
         @supports (-webkit-touch-callout: none) { body { height: -webkit-fill-available; } }
     </style>
@@ -131,7 +163,7 @@
 <body>
 
 <div class="top-bar">
-    <button onclick="location.href='/'">🏠</button>
+    <button onclick="stopAndGoHome()">🏠</button>
     <div class="filename">📖 {{ filename }}</div>
     <button class="settings-btn" onclick="toggleSettings()">☰</button>
 </div>
@@ -139,59 +171,81 @@
 <div class="settings-overlay" id="overlay" onclick="toggleSettings()"></div>
 
 <div class="settings-panel" id="panel">
-    <div class="settings-header">
+    <div class="s-header">
         <h3>⚙️ 설정</h3>
         <button class="close-btn" onclick="toggleSettings()">✕</button>
     </div>
-    <div class="settings-content">
-        <div class="setting-item">
-            <label class="setting-label">🔊 음성 지원</label>
-            <div class="tts-row">
-                <label class="tswitch">
+    <div class="s-content">
+        <!-- 음성 ON/OFF -->
+        <div class="s-item">
+            <label class="s-label">🔊 음성 지원</label>
+            <div class="t-row">
+                <label class="t-sw">
                     <input type="checkbox" id="ttsSwitch" onchange="toggleTTS()">
-                    <span class="tslider"></span>
+                    <span class="t-sl"></span>
                 </label>
                 <span id="ttsLabel">OFF</span>
             </div>
-            <div class="speed-wrap hidden" id="spdWrap">
+            
+            <!-- 음성 속도 -->
+            <div class="spd-wrap hidden" id="spdWrap">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <span style="font-size:14px;font-weight:500;">음성 속도</span>
                     <span style="font-size:16px;font-weight:700;color:#007bff;" id="spdVal">1.2x</span>
                 </div>
-                <input type="range" class="spd-slider" id="spdSlider" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updateSpd(this.value)">
+                <input type="range" class="spd-slider" id="spdSlider" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
                 <div class="spd-labels"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
+            </div>
+            
+            <!-- 반복 설정 -->
+            <div class="repeat-wrap hidden" id="repeatWrap">
+                <label class="s-label" style="margin-top:16px;">🔁 반복 재생</label>
+                <div class="repeat-options">
+                    <div class="repeat-opt active" id="repOnce" onclick="setRepeat('once')">1회</div>
+                    <div class="repeat-opt" id="repCount" onclick="setRepeat('count')">횟수</div>
+                    <div class="repeat-opt" id="repInf" onclick="setRepeat('infinite')">무한</div>
+                </div>
+                <div class="repeat-count-wrap hidden" id="repCountWrap">
+                    <span style="font-size:14px;">반복 횟수:</span>
+                    <input type="number" class="repeat-count-input" id="repCountInput" value="3" min="2" max="99" onchange="updateRepeatCount()">
+                    <span style="font-size:14px;">회</span>
+                </div>
+                <div class="repeat-status" id="repeatStatus">1회 재생</div>
             </div>
         </div>
         
-        <div class="setting-item">
-            <label class="setting-label">대사 스크롤 속도</label>
-            <span class="setting-value" id="delayVal">0.5초</span>
-            <div class="setting-controls">
-                <button class="setting-btn" onclick="chgDelay(-1);event.stopPropagation()">빠르게 -</button>
-                <button class="setting-btn" onclick="chgDelay(1);event.stopPropagation()">느리게 +</button>
+        <!-- 대사 스크롤 속도 -->
+        <div class="s-item">
+            <label class="s-label">대사 스크롤 속도</label>
+            <span class="s-value" id="delayVal">0.5초</span>
+            <div class="s-ctrl">
+                <button class="s-btn" onclick="chgDelay(-1);event.stopPropagation()">빠르게 -</button>
+                <button class="s-btn" onclick="chgDelay(1);event.stopPropagation()">느리게 +</button>
             </div>
             <div style="margin-top:8px;font-size:12px;color:#666;">범위: 0.2초 ~ 2.0초</div>
             <div style="margin-top:4px;font-size:12px;color:#999;" id="delayNote"></div>
         </div>
         
-        <div class="setting-item">
-            <label class="setting-label">폰트 크기</label>
-            <span class="setting-value" id="fontVal">18px</span>
-            <div class="setting-controls">
-                <button class="setting-btn" onclick="chgFont(-2);event.stopPropagation()">A-</button>
-                <button class="setting-btn" onclick="chgFont(2);event.stopPropagation()">A+</button>
+        <!-- 폰트 크기 -->
+        <div class="s-item">
+            <label class="s-label">폰트 크기</label>
+            <span class="s-value" id="fontVal">18px</span>
+            <div class="s-ctrl">
+                <button class="s-btn" onclick="chgFont(-2);event.stopPropagation()">A-</button>
+                <button class="s-btn" onclick="chgFont(2);event.stopPropagation()">A+</button>
             </div>
             <div style="margin-top:8px;font-size:12px;color:#666;">범위: 12px ~ 28px</div>
         </div>
         
-        <button class="setting-btn" onclick="resetAll();event.stopPropagation()" style="width:100%;background:#fee500;margin-top:20px;">🔄 기본값 초기화</button>
+        <button class="s-btn" onclick="resetAll();event.stopPropagation()" style="width:100%;background:#fee500;margin-top:20px;">🔄 기본값 초기화</button>
     </div>
 </div>
 
 <div id="chat-window"></div>
 
 <div class="bottom-bar">
-    <button class="bp" id="pauseBtn" onclick="togglePause()">⏸️ 일시정지</button>
+    <button class="b-pause" id="pauseBtn" onclick="togglePause()">⏸️ 일시정지</button>
+    <button class="b-stop" onclick="stopAndGoHome()">⏹️ 중지</button>
 </div>
 
 <script>
@@ -202,129 +256,270 @@
     
     let ttsOn = '{{ tts_enabled }}' === 'true';
     let ttsSpd = parseFloat('{{ tts_speed }}') || 1.2;
-    let fontSize = 18, delay = 500, paused = false, audio = null, idx = 0, running = false;
+    let fontSize = 18, msgDelay = 500;
+    let paused = false, stopped = false, audio = null, running = false;
+    
+    // 반복 설정
+    let repeatMode = 'once';   // 'once' | 'count' | 'infinite'
+    let repeatTotal = 3;       // 횟수 모드일 때 총 횟수
+    let currentRound = 1;      // 현재 라운드
+    
     const chat = document.getElementById('chat-window');
 
-    // 설정
-    function loadS() {
-        const sf = localStorage.getItem('smFont'); if (sf) fontSize = parseInt(sf);
-        document.documentElement.style.setProperty('--font-size', fontSize+'px');
-        document.getElementById('fontVal').textContent = fontSize+'px';
-        const sd = localStorage.getItem('smDelay'); if (sd) delay = parseInt(sd);
-        document.getElementById('delayVal').textContent = (delay/1000).toFixed(1)+'초';
-        document.getElementById('ttsSwitch').checked = ttsOn;
-        updTTSUI();
-        document.getElementById('spdSlider').value = ttsSpd;
-        document.getElementById('spdVal').textContent = ttsSpd.toFixed(1)+'x';
+    // ============================================
+    // 괄호 내 지문 제거 (TTS용)
+    // ============================================
+    function stripParentheses(text) {
+        if (!text) return '';
+        return text.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
     }
+
+    // ============================================
+    // 설정 관리
+    // ============================================
+    function loadSettings() {
+        const sf = localStorage.getItem('smFont'); if (sf) fontSize = parseInt(sf);
+        document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+        document.getElementById('fontVal').textContent = fontSize + 'px';
+        
+        const sd = localStorage.getItem('smDelay'); if (sd) msgDelay = parseInt(sd);
+        document.getElementById('delayVal').textContent = (msgDelay / 1000).toFixed(1) + '초';
+        
+        document.getElementById('ttsSwitch').checked = ttsOn;
+        updateTTSUI();
+        document.getElementById('spdSlider').value = ttsSpd;
+        document.getElementById('spdVal').textContent = ttsSpd.toFixed(1) + 'x';
+    }
+    
     function toggleSettings() {
         document.getElementById('panel').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
     }
+    
     function chgDelay(d) {
-        delay += d*100; delay = Math.max(200, Math.min(2000, delay));
-        localStorage.setItem('smDelay', delay);
-        document.getElementById('delayVal').textContent = (delay/1000).toFixed(1)+'초';
+        msgDelay += d * 100; msgDelay = Math.max(200, Math.min(2000, msgDelay));
+        localStorage.setItem('smDelay', msgDelay);
+        document.getElementById('delayVal').textContent = (msgDelay / 1000).toFixed(1) + '초';
         flash('delayVal');
     }
     function chgFont(d) {
         fontSize += d; fontSize = Math.max(12, Math.min(28, fontSize));
-        document.documentElement.style.setProperty('--font-size', fontSize+'px');
+        document.documentElement.style.setProperty('--font-size', fontSize + 'px');
         localStorage.setItem('smFont', fontSize);
-        document.getElementById('fontVal').textContent = fontSize+'px';
+        document.getElementById('fontVal').textContent = fontSize + 'px';
         flash('fontVal');
     }
     function resetAll() {
-        fontSize=18; delay=500;
-        document.documentElement.style.setProperty('--font-size','18px');
-        localStorage.setItem('smFont','18'); localStorage.setItem('smDelay','500');
-        document.getElementById('fontVal').textContent='18px';
-        document.getElementById('delayVal').textContent='0.5초';
+        fontSize = 18; msgDelay = 500;
+        document.documentElement.style.setProperty('--font-size', '18px');
+        localStorage.setItem('smFont', '18'); localStorage.setItem('smDelay', '500');
+        document.getElementById('fontVal').textContent = '18px';
+        document.getElementById('delayVal').textContent = '0.5초';
         flash('fontVal'); flash('delayVal');
     }
     function flash(id) {
-        const el=document.getElementById(id); el.style.color='#00aa00';
-        setTimeout(()=>el.style.color='#007bff',300);
+        const el = document.getElementById(id); el.style.color = '#00aa00';
+        setTimeout(() => el.style.color = '#007bff', 300);
     }
-    
-    // TTS
+
+    // ============================================
+    // TTS 제어
+    // ============================================
     function toggleTTS() {
         ttsOn = document.getElementById('ttsSwitch').checked;
-        updTTSUI();
-        if (!ttsOn && audio) { audio.pause(); audio=null; }
+        updateTTSUI();
+        if (!ttsOn && audio) { audio.pause(); audio = null; }
     }
-    function updTTSUI() {
-        document.getElementById('ttsLabel').textContent = ttsOn?'ON':'OFF';
+    function updateTTSUI() {
+        document.getElementById('ttsLabel').textContent = ttsOn ? 'ON' : 'OFF';
         document.getElementById('spdWrap').classList.toggle('hidden', !ttsOn);
-        document.getElementById('delayNote').textContent = ttsOn?'🔊 음성 모드 - 음성 완료 후 자동 진행':'';
+        document.getElementById('repeatWrap').classList.toggle('hidden', !ttsOn);
+        document.getElementById('delayNote').textContent = ttsOn ? '🔊 음성 모드 - 음성 완료 후 자동 진행' : '';
     }
-    function updateSpd(v) {
+    function updSpd(v) {
         ttsSpd = parseFloat(v);
-        document.getElementById('spdVal').textContent = ttsSpd.toFixed(1)+'x';
+        document.getElementById('spdVal').textContent = ttsSpd.toFixed(1) + 'x';
     }
     
+    // TTS 재생 (괄호 제거 후)
     function speak(text, role) {
         return new Promise(resolve => {
             if (!ttsOn || !text?.trim()) { resolve(); return; }
-            if (audio) { audio.pause(); audio=null; }
+            if (audio) { audio.pause(); audio = null; }
+            
+            // 괄호 안 지문 제거
+            const cleanText = stripParentheses(text);
+            if (!cleanText) { resolve(); return; }
             
             const gender = roleGenders[role] || 'female';
-            const url = `/tts?text=${encodeURIComponent(text)}&gender=${gender}&speed=${ttsSpd}`;
+            const url = `/tts?text=${encodeURIComponent(cleanText)}&gender=${gender}&speed=${ttsSpd}`;
             audio = new Audio(url);
-            audio.onended = () => { audio=null; resolve(); };
-            audio.onerror = () => { audio=null; resolve(); };
-            audio.play().catch(() => { audio=null; resolve(); });
+            audio.onended = () => { audio = null; resolve(); };
+            audio.onerror = () => { audio = null; resolve(); };
+            audio.play().catch(() => { audio = null; resolve(); });
         });
     }
+
+    // ============================================
+    // 반복 설정
+    // ============================================
+    function setRepeat(mode) {
+        repeatMode = mode;
+        document.querySelectorAll('.repeat-opt').forEach(el => el.classList.remove('active'));
+        document.getElementById(mode === 'once' ? 'repOnce' : mode === 'count' ? 'repCount' : 'repInf').classList.add('active');
+        document.getElementById('repCountWrap').classList.toggle('hidden', mode !== 'count');
+        updateRepeatStatus();
+    }
     
-    function addMsg(text, type, role, i) {
+    function updateRepeatCount() {
+        repeatTotal = parseInt(document.getElementById('repCountInput').value) || 3;
+        if (repeatTotal < 1) repeatTotal = 1;
+        updateRepeatStatus();
+    }
+    
+    function updateRepeatStatus() {
+        const status = document.getElementById('repeatStatus');
+        if (repeatMode === 'once') status.textContent = '1회 재생';
+        else if (repeatMode === 'count') status.textContent = `${repeatTotal}회 반복 (현재: ${currentRound}회차)`;
+        else status.textContent = `무한 반복 (현재: ${currentRound}회차)`;
+    }
+
+    // ============================================
+    // 메시지 & 일시정지
+    // ============================================
+    function addMsg(text, type, role, idx) {
         const div = document.createElement('div');
         div.className = `msg ${type} animate`;
-        if (roleColors[role] && type!=='action') div.style.background = roleColors[role];
-        div.innerHTML = `<span class="role-label">[${i}] ${role}</span>${text}`;
+        if (roleColors[role] && type !== 'action') div.style.background = roleColors[role];
+        div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}`;
         chat.appendChild(div);
-        chat.scrollTo({top:chat.scrollHeight, behavior:'smooth'});
+        chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
         return div;
     }
     
-    function waitPause() {
-        return new Promise(r => { if(!paused){r();return;} const c=setInterval(()=>{if(!paused){clearInterval(c);r();}},100); });
-    }
-    function togglePause() {
-        paused=!paused;
-        const b=document.getElementById('pauseBtn');
-        if(paused){b.textContent='▶️ 재개';b.className='br';if(audio)audio.pause();}
-        else{b.textContent='⏸️ 일시정지';b.className='bp';if(audio)audio.play();}
+    function addRoundDivider(round) {
+        const div = document.createElement('div');
+        div.className = 'round-divider';
+        div.textContent = `🔁 ${round}회차 시작`;
+        chat.appendChild(div);
+        chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
     }
     
-    async function run() {
-        if(running)return; running=true;
-        for(;idx<scriptData.length;idx++) {
+    function waitPause() {
+        return new Promise(resolve => {
+            if (!paused) { resolve(); return; }
+            const check = setInterval(() => {
+                if (!paused || stopped) { clearInterval(check); resolve(); }
+            }, 100);
+        });
+    }
+    
+    function togglePause() {
+        paused = !paused;
+        const btn = document.getElementById('pauseBtn');
+        if (paused) {
+            btn.textContent = '▶️ 재개'; btn.className = 'b-resume';
+            if (audio) audio.pause();
+        } else {
+            btn.textContent = '⏸️ 일시정지'; btn.className = 'b-pause';
+            if (audio) audio.play();
+        }
+    }
+    
+    function stopAndGoHome() {
+        stopped = true;
+        if (audio) { audio.pause(); audio = null; }
+        location.href = '/';
+    }
+
+    // ============================================
+    // 1회 재생
+    // ============================================
+    async function playOnce() {
+        for (let i = 0; i < scriptData.length; i++) {
+            if (stopped) return false;
             await waitPause();
-            const it=scriptData[idx];
-            const my=myRoles.some(r=>it.role.includes(r));
-            const type=it.role==="(지문)"?"action":my?"user":"bot";
-            const el=addMsg(it.text,type,it.role,it.idx);
+            if (stopped) return false;
             
-            if(ttsOn && it.role!=="(지문)" && it.text.trim()) {
+            const item = scriptData[i];
+            const isMyRole = myRoles.some(r => item.role.includes(r));
+            const type = item.role === "(지문)" ? "action" : isMyRole ? "user" : "bot";
+            
+            const el = addMsg(item.text, type, item.role, item.idx);
+            
+            // (지문)은 TTS 안 읽음, 일반 대사만 읽음
+            if (ttsOn && item.role !== "(지문)" && item.text.trim()) {
                 el.classList.add('speaking');
-                await speak(it.text, it.role);
+                await speak(item.text, item.role);
                 el.classList.remove('speaking');
-                await new Promise(r=>setTimeout(r,150));
+                await new Promise(r => setTimeout(r, 150));
             } else {
-                await new Promise(r=>setTimeout(r,delay));
+                await new Promise(r => setTimeout(r, msgDelay));
             }
         }
-        const end=document.createElement('div');
-        end.className='msg action animate';
-        end.innerHTML='🎉 전체 보기 완료!';
-        chat.appendChild(end);
-        chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});
-        running=false;
+        return true; // 정상 완료
     }
+
+    // ============================================
+    // 메인 실행 (반복 포함)
+    // ============================================
+    async function run() {
+        if (running) return;
+        running = true;
+        currentRound = 1;
+        updateRepeatStatus();
+        
+        while (!stopped) {
+            // 2회차부터 구분선
+            if (currentRound > 1) {
+                addRoundDivider(currentRound);
+                // 라운드 간 잠시 대기
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            
+            const completed = await playOnce();
+            if (!completed || stopped) break;
+            
+            // 반복 체크
+            if (repeatMode === 'once') {
+                break; // 1회만
+            } else if (repeatMode === 'count') {
+                if (currentRound >= repeatTotal) break;
+                currentRound++;
+                updateRepeatStatus();
+                // 채팅창 정리 (이전 내용 유지하되 스크롤만)
+            } else {
+                // 무한 반복
+                currentRound++;
+                updateRepeatStatus();
+            }
+        }
+        
+        // 완료 메시지
+        if (!stopped) {
+            const endDiv = document.createElement('div');
+            endDiv.className = 'msg action animate';
+            if (repeatMode === 'once') {
+                endDiv.innerHTML = '🎉 전체 보기 완료!';
+            } else {
+                endDiv.innerHTML = `🎉 ${currentRound}회 반복 완료!`;
+            }
+            chat.appendChild(endDiv);
+            chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+        }
+        
+        running = false;
+    }
+
+    // ============================================
+    // 시작
+    // ============================================
+    loadSettings();
+    run();
     
-    loadS(); run();
-    if(performance.navigation.type===performance.navigation.TYPE_RELOAD) window.location.href='/';
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        window.location.href = '/';
+    }
 </script>
 </body>
 </html>
