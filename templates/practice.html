@@ -3,167 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Script Mate - 연습 중</title>
+    <title>SCAT - 연습 중</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --font-size: 18px; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-            background: #bacee0; display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; overflow: hidden; position: fixed; width: 100%;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #e8e0d0;
+            display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh;
+            overflow: hidden; position: fixed; width: 100%;
         }
-        .top-bar { 
-            background: white; padding: 12px 16px; border-bottom: 2px solid #e0e0e0;
+
+        /* 노트 배경선 */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(160,170,180,0.12) 39px, rgba(160,170,180,0.12) 40px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* 탑바 */
+        .top-bar {
+            background: #fffef8;
+            padding: 10px 14px;
+            border-bottom: 2.5px solid #2a2a2a;
             display: flex; justify-content: space-between; align-items: center;
             flex-shrink: 0; z-index: 100; gap: 8px;
+            box-shadow: 0 2px 0 #2a2a2a;
         }
-        .top-bar button { 
-            background: #222; color: white; border: none; padding: 10px 16px;
-            border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
+        .top-bar button {
+            background: #2a2a2a; color: #fff9c2;
+            border: none; padding: 9px 14px;
+            border-radius: 3px; cursor: pointer;
+            font-family: 'Caveat', cursive;
+            font-size: 16px; font-weight: 700;
+            box-shadow: 2px 2px 0 #555;
+            transition: all 0.12s;
         }
+        .top-bar button:active { transform: translate(2px,2px); box-shadow: 0 0 0 #555; }
         .top-bar .filename {
-            font-weight: bold; font-size: 14px; flex: 1; text-align: center;
+            font-family: 'Caveat', cursive;
+            font-weight: 700; font-size: 16px; flex: 1; text-align: center;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+            color: #2a2a2a;
         }
-        .settings-btn { background: #666 !important; padding: 10px 12px !important; font-size: 18px !important; }
-        
+        .settings-btn {
+            background: #555 !important;
+            padding: 9px 13px !important;
+            font-size: 17px !important;
+        }
+
+        /* 설정 패널 */
         .settings-panel {
             position: fixed; top: 0; right: -100%; width: 300px; height: 100%;
-            background: white; box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            background: #fffef8; box-shadow: -4px 0 0 #2a2a2a;
             z-index: 200; transition: right 0.3s ease; overflow-y: auto;
+            border-left: 2.5px solid #2a2a2a;
         }
         .settings-panel.open { right: 0; }
-        .sh { padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;
-            display: flex; justify-content: space-between; align-items: center; }
-        .sh h3 { font-size: 18px; margin: 0; }
-        .cb { background: none; border: none; font-size: 24px; cursor: pointer; color: #666;
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .sc { padding: 24px; }
-        .si { margin-bottom: 24px; }
-        .sl { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: block; color: #333; }
-        .sv { font-size: 20px; font-weight: bold; color: #007bff; margin-bottom: 8px; display: block; transition: color 0.3s; }
+        .sh {
+            padding: 18px 20px; background: #fff9c2;
+            border-bottom: 2.5px solid #2a2a2a;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .sh h3 { font-family: 'Caveat', cursive; font-size: 20px; margin: 0; }
+        .cb {
+            background: none; border: 2px solid #2a2a2a; font-size: 20px; cursor: pointer;
+            color: #2a2a2a; width: 30px; height: 30px; border-radius: 3px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Caveat', cursive; font-weight: 700;
+        }
+        .sc { padding: 22px; }
+        .si { margin-bottom: 22px; }
+        .sl { font-family: 'Caveat', cursive; font-size: 17px; font-weight: 700; margin-bottom: 8px; display: block; color: #2a2a2a; }
+        .sv { font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; color: #2a2a2a; margin-bottom: 8px; display: block; transition: color 0.3s; }
         .sctrl { display: flex; gap: 8px; }
-        .sb { flex: 1; padding: 12px; background: #f0f0f0; border: none; border-radius: 8px;
-            font-size: 16px; font-weight: 600; cursor: pointer; }
-        .sb:active { background: #ddd; }
-        
+        .sb {
+            flex: 1; padding: 10px;
+            background: #f0ece0; border: 2px solid #ccc; border-radius: 3px;
+            font-family: 'Caveat', cursive; font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.1s;
+        }
+        .sb:active { background: #ddd; transform: translate(1px,1px); }
+
+        /* 토글 스위치 */
         .tr { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
         .ts { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
         .ts input { opacity: 0; width: 0; height: 0; }
         .tsl { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: #ccc; border-radius: 28px; cursor: pointer; transition: 0.3s; }
-        .tsl::before { content: ''; position: absolute; height: 22px; width: 22px;
-            left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        .ts input:checked + .tsl { background: #007bff; }
+            background: #ccc; border-radius: 28px; cursor: pointer; transition: 0.3s;
+            border: 2px solid #999; }
+        .tsl::before { content: ''; position: absolute; height: 20px; width: 20px;
+            left: 2px; bottom: 2px; background: white; border-radius: 50%; transition: 0.3s; }
+        .ts input:checked + .tsl { background: #2a2a2a; border-color: #2a2a2a; }
         .ts input:checked + .tsl::before { transform: translateX(24px); }
-        
+        .ttsLbl { font-family: 'Caveat', cursive; font-size: 16px; font-weight: 700; }
+
         .sw { margin-top: 12px; }
         .sw.hd { display: none; }
         .ss { width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
             background: #ddd; border-radius: 3px; outline: none; }
         .ss::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px;
-            background: #007bff; border-radius: 50%; cursor: pointer; }
-        .srl { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 4px; }
-        
+            background: #2a2a2a; border-radius: 50%; cursor: pointer; }
+        .srl { display: flex; justify-content: space-between; font-size: 12px; color: #999; margin-top: 4px; font-family: 'Caveat', cursive; }
+
         .settings-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); z-index: 199; display: none;
+            background: rgba(0,0,0,0.4); z-index: 199; display: none;
         }
         .settings-overlay.show { display: block; }
-        
-        #chat-window { 
+
+        /* 채팅창 */
+        #chat-window {
             flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px;
-            display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch;
+            display: flex; flex-direction: column; gap: 12px;
+            -webkit-overflow-scrolling: touch;
+            position: relative; z-index: 1;
         }
-        .msg { 
-            max-width: 85%; padding: 14px 16px; border-radius: 18px; line-height: 1.6;
+
+        /* 말풍선 */
+        .msg {
+            max-width: 85%; padding: 12px 15px;
+            border-radius: 3px;
+            line-height: 1.6;
             font-size: var(--font-size); word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); opacity: 0; transform: translateY(10px);
+            border: 2px solid #2a2a2a;
+            opacity: 0; transform: translateY(10px);
         }
-        .msg.animate { animation: slideIn 0.4s ease-out forwards; }
+        .msg.animate { animation: slideIn 0.35s ease-out forwards; }
         @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
-        .bot { align-self: flex-start; background: white; border-bottom-left-radius: 4px; }
-        .user { align-self: flex-end; background: #fee500; border-bottom-right-radius: 4px; }
-        .action { align-self: center; background: rgba(0,0,0,0.08); font-size: var(--font-size);
-            border-radius: 20px; padding: 8px 16px; max-width: 90%; text-align: center; }
-        .role-label { font-size: calc(var(--font-size) * 0.75); font-weight: 700; margin-bottom: 6px;
-            display: block; color: #555; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 4px; }
-        .answer-box { margin-top: 10px; font-size: calc(var(--font-size) * 0.85);
-            border-top: 1px solid rgba(0,0,0,0.15); padding-top: 10px; line-height: 1.5; }
-        .correct { color: #00aa00; font-weight: bold; }
-        .wrong { color: #dd0000; }
-        .msg.speaking { box-shadow: 0 0 0 2px #007bff, 0 2px 8px rgba(0,123,255,0.3); }
-        
-        .input-area { 
-            background: white; padding: 12px; display: flex; gap: 8px;
-            border-top: 2px solid #e0e0e0; align-items: flex-end; flex-shrink: 0;
+
+        /* 상대방 말풍선 - 왼쪽 */
+        .bot {
+            align-self: flex-start;
+            background: white;
+            box-shadow: 3px 3px 0 #2a2a2a;
+            border-bottom-left-radius: 0;
+        }
+        /* 내 말풍선 - 오른쪽 */
+        .user {
+            align-self: flex-end;
+            background: #fff9c2;
+            box-shadow: -3px 3px 0 #2a2a2a;
+            border-bottom-right-radius: 0;
+        }
+        /* 지문 */
+        .action {
+            align-self: center;
+            background: rgba(42,42,42,0.07);
+            border: 1.5px dashed #999;
+            border-radius: 20px;
+            font-size: calc(var(--font-size) * 0.85);
+            padding: 7px 16px; max-width: 90%; text-align: center;
+            box-shadow: none;
+        }
+
+        /* 넘버링 라벨 - 핵심! */
+        .role-label {
+            font-family: 'Caveat', cursive;
+            font-size: calc(var(--font-size) * 0.72);
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
+            border-bottom: 1.5px solid rgba(0,0,0,0.1);
+            padding-bottom: 4px;
+        }
+        .role-label .num {
+            display: inline-block;
+            background: #2a2a2a;
+            color: white;
+            font-size: calc(var(--font-size) * 0.62);
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-right: 4px;
+            font-family: 'Caveat', cursive;
+            font-weight: 700;
+        }
+
+        .answer-box {
+            margin-top: 10px; font-size: calc(var(--font-size) * 0.85);
+            border-top: 1.5px dashed rgba(0,0,0,0.15); padding-top: 10px; line-height: 1.5;
+        }
+        .correct { color: #2a8a00; font-weight: bold; }
+        .wrong { color: #cc2200; }
+        .msg.speaking {
+            box-shadow: 0 0 0 2.5px #2a2a2a, 3px 3px 0 #2a2a2a;
+            animation: pulse 0.8s ease-in-out infinite alternate, slideIn 0.35s ease-out forwards;
+        }
+        @keyframes pulse { from { border-color: #2a2a2a; } to { border-color: #888; } }
+
+        /* 입력 영역 */
+        .input-area {
+            background: #fffef8;
+            padding: 10px 12px;
+            display: flex; gap: 8px;
+            border-top: 2.5px solid #2a2a2a;
+            align-items: flex-end; flex-shrink: 0;
+            box-shadow: 0 -2px 0 #2a2a2a;
+            position: relative; z-index: 1;
         }
         .iw { flex: 1; position: relative; display: flex; align-items: center; }
-        textarea { 
+        textarea {
             flex: 1; width: 100%; min-height: 44px; max-height: 100px;
-            font-size: 16px; padding: 12px 40px 12px 12px; border-radius: 12px;
-            border: 1px solid #ddd; resize: none; outline: none; font-family: inherit;
+            font-size: 16px; padding: 11px 38px 11px 12px;
+            border-radius: 3px;
+            border: 2px solid #ccc;
+            resize: none; outline: none; font-family: inherit;
+            background: white;
+            transition: border-color 0.15s;
         }
-        .xb { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+        textarea:focus { border-color: #2a2a2a; }
+        .xb {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
             width: 24px; height: 24px; border-radius: 50%; background: #ccc;
             border: none; cursor: pointer; display: none; align-items: center;
-            justify-content: center; color: white; font-size: 14px; line-height: 1; padding: 0; }
+            justify-content: center; color: white; font-size: 14px; line-height: 1; padding: 0;
+        }
         .xb.show { display: flex; }
         .bc { display: flex; flex-direction: column; gap: 6px; }
-        .sendb, .nextb { padding: 0 20px; height: 44px; border-radius: 12px;
-            border: none; cursor: pointer; font-weight: bold; font-size: 15px; white-space: nowrap; }
-        .sendb { background: #fee500; }
-        .nextb { background: #007bff; color: white; }
+        .sendb, .nextb {
+            padding: 0 16px; height: 44px; border-radius: 3px;
+            border: 2px solid #2a2a2a; cursor: pointer;
+            font-family: 'Caveat', cursive; font-weight: 700; font-size: 16px;
+            white-space: nowrap; transition: all 0.12s;
+        }
+        .sendb { background: #fff9c2; color: #2a2a2a; box-shadow: 2px 2px 0 #2a2a2a; }
+        .nextb { background: #2a2a2a; color: #fff9c2; box-shadow: 2px 2px 0 #555; }
+        .sendb:active, .nextb:active { transform: translate(2px,2px); box-shadow: 0 0 0; }
+
         @supports (-webkit-touch-callout: none) { body { height: -webkit-fill-available; } }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
-    <button onclick="location.href='/'">🏠</button>
+    <button onclick="location.href='/'">🏠 홈</button>
     <div class="filename">{{ filename }}</div>
     <button class="settings-btn" onclick="toggleSettings()">☰</button>
 </div>
 
 <div class="settings-overlay" id="overlay" onclick="toggleSettings()"></div>
 <div class="settings-panel" id="panel">
-    <div class="sh"><h3>⚙️ 설정</h3><button class="cb" onclick="toggleSettings()">✕</button></div>
+    <div class="sh">
+        <h3>⚙️ 설정</h3>
+        <button class="cb" onclick="toggleSettings()">✕</button>
+    </div>
     <div class="sc">
         <div class="si">
             <label class="sl">🔊 음성 지원</label>
             <div class="tr">
                 <label class="ts"><input type="checkbox" id="ttsSwitch" onchange="toggleTTS()"><span class="tsl"></span></label>
-                <span id="ttsLbl">OFF</span>
+                <span id="ttsLbl" class="ttsLbl">OFF</span>
             </div>
             <div class="sw hd" id="spdW">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <span style="font-size:14px;font-weight:500;">음성 속도</span>
-                    <span style="font-size:16px;font-weight:700;color:#007bff;" id="spdV">1.2x</span>
+                    <span style="font-family:'Caveat',cursive;font-size:15px;font-weight:600;">음성 속도</span>
+                    <span style="font-family:'Caveat',cursive;font-size:18px;font-weight:700;color:#2a2a2a;" id="spdV">1.2x</span>
                 </div>
                 <input type="range" class="ss" id="spdS" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
                 <div class="srl"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
             </div>
         </div>
         <div class="si">
-            <label class="sl">대사 스크롤 속도</label>
+            <label class="sl">⏱ 대사 속도</label>
             <span class="sv" id="dV">0.5초</span>
             <div class="sctrl">
                 <button class="sb" onclick="chgD(-1);event.stopPropagation()">빠르게 -</button>
                 <button class="sb" onclick="chgD(1);event.stopPropagation()">느리게 +</button>
             </div>
-            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 0.2초 ~ 2.0초</div>
-            <div style="margin-top:4px;font-size:12px;color:#999;" id="dN"></div>
+            <div style="margin-top:6px;font-family:'Caveat',cursive;font-size:13px;color:#888;">0.2초 ~ 2.0초</div>
+            <div style="margin-top:4px;font-family:'Caveat',cursive;font-size:13px;color:#999;" id="dN"></div>
         </div>
         <div class="si">
-            <label class="sl">폰트 크기</label>
+            <label class="sl">🔤 폰트 크기</label>
             <span class="sv" id="fV">18px</span>
             <div class="sctrl">
-                <button class="sb" onclick="chgF(-2);event.stopPropagation()">A-</button>
+                <button class="sb" onclick="chgF(-2);event.stopPropagation()">A−</button>
                 <button class="sb" onclick="chgF(2);event.stopPropagation()">A+</button>
             </div>
-            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 12px ~ 28px</div>
+            <div style="margin-top:6px;font-family:'Caveat',cursive;font-size:13px;color:#888;">12px ~ 28px</div>
         </div>
-        <button class="sb" onclick="resetA();event.stopPropagation()" style="width:100%;background:#fee500;margin-top:20px;">🔄 기본값 초기화</button>
+        <button class="sb" onclick="resetA();event.stopPropagation()" style="width:100%;background:#fff9c2;border-color:#2a2a2a;margin-top:16px;">🔄 기본값 초기화</button>
     </div>
 </div>
 
@@ -171,7 +295,7 @@
 
 <div class="input-area">
     <div class="iw">
-        <textarea id="inp" placeholder="대사 입력 (숫자로 이동)"></textarea>
+        <textarea id="inp" placeholder="대사 입력 (숫자: 해당 번호로 이동)"></textarea>
         <button class="xb" id="xBtn" onclick="clr()">✕</button>
     </div>
     <div class="bc">
@@ -186,16 +310,14 @@
     try{mr=JSON.parse('{{ my_roles | tojson | safe }}');}catch(e){}
     try{rc=JSON.parse('{{ colors | safe }}');}catch(e){}
     try{rg=JSON.parse('{{ genders | safe }}');}catch(e){}
-    
+
     let ttsOn='{{tts_enabled}}'==='true', ttsSpd=parseFloat('{{tts_speed}}')||1.2;
     let ci=0, mti=null, comp=false, fs=18, dl=500, busy=false;
     const sharedAudio = new Audio();
     const inp=document.getElementById('inp'), chat=document.getElementById('chat-window'), xBtn=document.getElementById('xBtn');
 
-    // 괄호 지문 제거
     function stripParen(t){ return t?t.replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').trim():''; }
 
-    // TTS (단일 Audio 재사용)
     function speak(text,role){
         return new Promise(res=>{
             if(!ttsOn||!text?.trim()){res();return;}
@@ -216,11 +338,10 @@
     function updUI(){
         document.getElementById('ttsLbl').textContent=ttsOn?'ON':'OFF';
         document.getElementById('spdW').classList.toggle('hd',!ttsOn);
-        document.getElementById('dN').textContent=ttsOn?'🔊 음성 모드 - 음성 완료 후 자동 진행':'';
+        document.getElementById('dN').textContent=ttsOn?'🔊 음성 완료 후 자동 진행':'';
     }
     function updSpd(v){ttsSpd=parseFloat(v);document.getElementById('spdV').textContent=ttsSpd.toFixed(1)+'x';}
 
-    // 설정
     function loadS(){
         const sf=localStorage.getItem('smF');if(sf)fs=parseInt(sf);
         document.documentElement.style.setProperty('--font-size',fs+'px');
@@ -243,11 +364,10 @@
     function resetA(){fs=18;dl=500;document.documentElement.style.setProperty('--font-size','18px');
         localStorage.setItem('smF','18');localStorage.setItem('smD','500');
         document.getElementById('fV').textContent='18px';document.getElementById('dV').textContent='0.5초';fl('fV');fl('dV');}
-    function fl(id){const e=document.getElementById(id);e.style.color='#00aa00';setTimeout(()=>e.style.color='#007bff',300);}
-    
+    function fl(id){const e=document.getElementById(id);e.style.color='#2a8a00';setTimeout(()=>e.style.color='#2a2a2a',300);}
+
     loadS();
 
-    // 입력
     inp.addEventListener('compositionstart',()=>comp=true);
     inp.addEventListener('compositionend',()=>comp=false);
     inp.addEventListener('input',()=>xBtn.classList.toggle('show',!!inp.value.trim()));
@@ -255,10 +375,13 @@
     function clr(){inp.value='';xBtn.classList.remove('show');inp.focus();}
     function norm(t){return t?t.replace(/\([^)]*\)/g,'').replace(/[^a-zA-Z0-9가-힣]/g,'').toLowerCase().trim():'';}
 
+    // ★ 말풍선 넘버링 - [번호]를 검은 뱃지로 표시
     function addMsg(text,type,role,idx,extra=''){
         const div=document.createElement('div');div.className=`msg ${type}`;
         if(rc[role]&&type!=='action')div.style.background=rc[role];
-        div.innerHTML=`<span class="role-label">[${idx}] ${role}</span>${text}${extra}`;
+        // 넘버링 표시: action 타입도 번호 포함
+        const numBadge = idx ? `<span class="num">${idx}</span>` : '';
+        div.innerHTML=`<span class="role-label">${numBadge}${role}</span>${text}${extra}`;
         chat.appendChild(div);
         setTimeout(()=>div.classList.add('animate'),10);
         setTimeout(()=>chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}),100);
@@ -273,7 +396,6 @@
                 if(mr.some(r=>it.role.includes(r))){mti=ci;inp.focus();busy=false;return;}
                 const type=it.role==="(지문)"?"action":"bot";
                 const el=addMsg(it.text,type,it.role,it.idx);ci++;
-                // (지문)은 TTS 안 읽음
                 if(ttsOn&&it.role!=="(지문)"&&it.text.trim()){
                     el.classList.add('speaking');await speak(it.text,it.role);
                     el.classList.remove('speaking');await new Promise(r=>setTimeout(r,150));

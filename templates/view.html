@@ -3,167 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Script Mate - 전체 보기</title>
+    <title>SCAT - 전체 보기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --font-size: 18px; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-            background: #bacee0; display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; overflow: hidden; position: fixed; width: 100%;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #e8e0d0;
+            display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh;
+            overflow: hidden; position: fixed; width: 100%;
         }
-        .top-bar { 
-            background: white; padding: 12px 16px; border-bottom: 2px solid #e0e0e0; 
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(160,170,180,0.12) 39px, rgba(160,170,180,0.12) 40px);
+            pointer-events: none; z-index: 0;
+        }
+
+        .top-bar {
+            background: #fffef8;
+            padding: 10px 14px;
+            border-bottom: 2.5px solid #2a2a2a;
             display: flex; justify-content: space-between; align-items: center;
             flex-shrink: 0; z-index: 100; gap: 8px;
+            box-shadow: 0 2px 0 #2a2a2a;
         }
-        .top-bar button { 
-            background: #222; color: white; border: none; padding: 10px 16px; 
-            border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
+        .top-bar button {
+            background: #2a2a2a; color: #fff9c2;
+            border: none; padding: 9px 14px;
+            border-radius: 3px; cursor: pointer;
+            font-family: 'Caveat', cursive;
+            font-size: 16px; font-weight: 700;
+            box-shadow: 2px 2px 0 #555;
+            transition: all 0.12s;
         }
+        .top-bar button:active { transform: translate(2px,2px); box-shadow: 0 0 0 #555; }
         .top-bar .filename {
-            font-weight: bold; font-size: 14px; flex: 1; text-align: center;
+            font-family: 'Caveat', cursive;
+            font-weight: 700; font-size: 16px; flex: 1; text-align: center;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+            color: #2a2a2a;
         }
-        .settings-btn { background: #666 !important; padding: 10px 12px !important; font-size: 18px !important; }
-        
+        .settings-btn { background: #555 !important; padding: 9px 13px !important; font-size: 17px !important; }
+
         /* 설정 패널 */
         .settings-panel {
             position: fixed; top: 0; right: -100%; width: 300px; height: 100%;
-            background: white; box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            background: #fffef8; box-shadow: -4px 0 0 #2a2a2a;
             z-index: 200; transition: right 0.3s ease; overflow-y: auto;
+            border-left: 2.5px solid #2a2a2a;
         }
         .settings-panel.open { right: 0; }
         .s-header {
-            padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e0e0e0;
+            padding: 18px 20px; background: #fff9c2;
+            border-bottom: 2.5px solid #2a2a2a;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .s-header h3 { font-size: 18px; margin: 0; }
+        .s-header h3 { font-family: 'Caveat', cursive; font-size: 20px; margin: 0; }
         .close-btn {
-            background: none; border: none; font-size: 24px; cursor: pointer;
-            color: #666; width: 32px; height: 32px;
+            background: none; border: 2px solid #2a2a2a; font-size: 20px; cursor: pointer;
+            color: #2a2a2a; width: 30px; height: 30px; border-radius: 3px;
             display: flex; align-items: center; justify-content: center;
         }
-        .s-content { padding: 24px; }
-        .s-item { margin-bottom: 24px; }
-        .s-label { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: block; color: #333; }
-        .s-value {
-            font-size: 20px; font-weight: bold; color: #007bff;
-            margin-bottom: 8px; display: block; transition: color 0.3s;
-        }
+        .s-content { padding: 22px; }
+        .s-item { margin-bottom: 22px; }
+        .s-label { font-family: 'Caveat', cursive; font-size: 17px; font-weight: 700; margin-bottom: 8px; display: block; color: #2a2a2a; }
+        .s-value { font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; color: #2a2a2a; margin-bottom: 8px; display: block; transition: color 0.3s; }
         .s-ctrl { display: flex; gap: 8px; }
         .s-btn {
-            flex: 1; padding: 12px; background: #f0f0f0; border: none;
-            border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+            flex: 1; padding: 10px;
+            background: #f0ece0; border: 2px solid #ccc; border-radius: 3px;
+            font-family: 'Caveat', cursive; font-size: 16px; font-weight: 700; cursor: pointer;
         }
         .s-btn:active { background: #ddd; }
-        
-        /* 토글 스위치 */
+
         .t-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
         .t-sw { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
         .t-sw input { opacity: 0; width: 0; height: 0; }
         .t-sl {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: #ccc; border-radius: 28px; cursor: pointer; transition: 0.3s;
+            border: 2px solid #999;
         }
-        .t-sl::before {
-            content: ''; position: absolute; height: 22px; width: 22px;
-            left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;
-        }
-        .t-sw input:checked + .t-sl { background: #007bff; }
+        .t-sl::before { content: ''; position: absolute; height: 20px; width: 20px;
+            left: 2px; bottom: 2px; background: white; border-radius: 50%; transition: 0.3s; }
+        .t-sw input:checked + .t-sl { background: #2a2a2a; border-color: #2a2a2a; }
         .t-sw input:checked + .t-sl::before { transform: translateX(24px); }
-        
+
         .spd-wrap { margin-top: 12px; }
         .spd-wrap.hidden { display: none; }
-        .spd-slider {
-            width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
-            background: #ddd; border-radius: 3px; outline: none;
-        }
-        .spd-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 22px; height: 22px;
-            background: #007bff; border-radius: 50%; cursor: pointer;
-        }
-        .spd-labels { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 4px; }
-        
-        /* 반복 설정 */
+        .spd-slider { width: 100%; height: 6px; -webkit-appearance: none; appearance: none;
+            background: #ddd; border-radius: 3px; outline: none; }
+        .spd-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px;
+            background: #2a2a2a; border-radius: 50%; cursor: pointer; }
+        .spd-labels { display: flex; justify-content: space-between; font-family: 'Caveat', cursive; font-size: 12px; color: #999; margin-top: 4px; }
+
         .repeat-wrap { margin-top: 12px; }
         .repeat-wrap.hidden { display: none; }
         .repeat-options { display: flex; gap: 8px; margin-top: 8px; }
         .repeat-opt {
-            flex: 1; padding: 10px; border: 2px solid #ddd; background: white;
-            border-radius: 10px; text-align: center; cursor: pointer;
-            font-size: 14px; font-weight: 600; transition: all 0.2s;
+            flex: 1; padding: 10px; border: 2px solid #ccc; background: white;
+            border-radius: 3px; text-align: center; cursor: pointer;
+            font-family: 'Caveat', cursive; font-size: 16px; font-weight: 700; transition: all 0.15s;
         }
-        .repeat-opt.active { border-color: #007bff; background: #e7f3ff; color: #007bff; }
+        .repeat-opt.active { border-color: #2a2a2a; background: #fff9c2; color: #2a2a2a; }
         .repeat-count-wrap { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
         .repeat-count-wrap.hidden { display: none; }
         .repeat-count-input {
-            width: 60px; padding: 8px; border: 2px solid #ddd; border-radius: 8px;
-            font-size: 18px; font-weight: 700; text-align: center; outline: none;
+            width: 60px; padding: 8px; border: 2px solid #ccc; border-radius: 3px;
+            font-family: 'Caveat', cursive; font-size: 20px; font-weight: 700; text-align: center; outline: none;
         }
-        .repeat-count-input:focus { border-color: #007bff; }
+        .repeat-count-input:focus { border-color: #2a2a2a; }
         .repeat-status {
-            font-size: 13px; color: #666; margin-top: 8px; padding: 6px 10px;
-            background: #f8f9fa; border-radius: 8px;
+            font-family: 'Caveat', cursive; font-size: 14px; color: #666;
+            margin-top: 8px; padding: 6px 10px;
+            background: #f8f5ee; border-radius: 3px; border: 1px solid #ddd;
         }
-        
+
         .settings-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); z-index: 199; display: none;
+            background: rgba(0,0,0,0.4); z-index: 199; display: none;
         }
         .settings-overlay.show { display: block; }
-        
-        #chat-window { 
+
+        #chat-window {
             flex: 1; overflow-y: auto; overflow-x: hidden;
             padding: 16px; display: flex; flex-direction: column; gap: 12px;
             -webkit-overflow-scrolling: touch;
+            position: relative; z-index: 1;
         }
-        .msg { 
-            max-width: 85%; padding: 14px 16px; border-radius: 18px; line-height: 1.6; 
+
+        /* 말풍선 */
+        .msg {
+            max-width: 85%; padding: 12px 15px;
+            border-radius: 3px;
+            line-height: 1.6;
             font-size: var(--font-size); word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); opacity: 0; transform: translateY(10px);
+            border: 2px solid #2a2a2a;
+            opacity: 0; transform: translateY(10px);
         }
-        .msg.animate { animation: slideIn 0.4s ease-out forwards; }
+        .msg.animate { animation: slideIn 0.35s ease-out forwards; }
         @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
-        .bot { align-self: flex-start; background: white; border-bottom-left-radius: 4px; }
-        .user { align-self: flex-end; background: #fee500; border-bottom-right-radius: 4px; }
-        .action { 
-            align-self: center; background: rgba(0,0,0,0.08); font-size: var(--font-size);
-            border-radius: 20px; padding: 8px 16px; max-width: 90%; text-align: center;
+        .bot  { align-self: flex-start; background: white; box-shadow: 3px 3px 0 #2a2a2a; border-bottom-left-radius: 0; }
+        .user { align-self: flex-end; background: #fff9c2; box-shadow: -3px 3px 0 #2a2a2a; border-bottom-right-radius: 0; }
+        .action {
+            align-self: center;
+            background: rgba(42,42,42,0.07);
+            border: 1.5px dashed #999; border-radius: 20px;
+            font-size: calc(var(--font-size) * 0.85);
+            padding: 7px 16px; max-width: 90%; text-align: center;
+            box-shadow: none;
         }
-        .role-label { 
-            font-size: calc(var(--font-size) * 0.75); font-weight: 700; margin-bottom: 6px; 
-            display: block; color: #555; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 4px;
+
+        /* ★ 넘버링 라벨 */
+        .role-label {
+            font-family: 'Caveat', cursive;
+            font-size: calc(var(--font-size) * 0.72);
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
+            border-bottom: 1.5px solid rgba(0,0,0,0.1);
+            padding-bottom: 4px;
         }
-        .msg.speaking { box-shadow: 0 0 0 2px #007bff, 0 2px 8px rgba(0,123,255,0.3); }
-        
+        .role-label .num {
+            display: inline-block;
+            background: #2a2a2a;
+            color: white;
+            font-size: calc(var(--font-size) * 0.62);
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-right: 4px;
+            font-family: 'Caveat', cursive;
+            font-weight: 700;
+        }
+
+        .msg.speaking {
+            box-shadow: 0 0 0 2.5px #2a2a2a, 3px 3px 0 #2a2a2a;
+        }
+
         /* 라운드 구분선 */
         .round-divider {
-            align-self: center; padding: 8px 20px; margin: 8px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border-radius: 20px; font-size: 14px; font-weight: 700;
-            box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+            align-self: center; padding: 7px 20px; margin: 6px 0;
+            background: #2a2a2a;
+            color: #fff9c2;
+            border-radius: 3px;
+            font-family: 'Caveat', cursive;
+            font-size: 15px; font-weight: 700;
+            box-shadow: 2px 2px 0 #555;
         }
-        
+
         .bottom-bar {
-            background: white; padding: 10px 16px; border-top: 2px solid #e0e0e0;
+            background: #fffef8;
+            padding: 10px 16px;
+            border-top: 2.5px solid #2a2a2a;
             display: flex; justify-content: center; gap: 12px; flex-shrink: 0;
+            box-shadow: 0 -2px 0 #2a2a2a;
+            position: relative; z-index: 1;
         }
         .bottom-bar button {
-            padding: 10px 24px; border: none; border-radius: 10px;
-            font-size: 15px; font-weight: 600; cursor: pointer;
+            padding: 10px 24px;
+            border: 2px solid #2a2a2a;
+            border-radius: 3px;
+            font-family: 'Caveat', cursive;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.12s;
+            box-shadow: 3px 3px 0 #2a2a2a;
         }
-        .b-pause { background: #ff6b6b; color: white; }
-        .b-resume { background: #51cf66; color: white; }
-        .b-stop { background: #868e96; color: white; }
-        
+        .bottom-bar button:active { transform: translate(3px,3px); box-shadow: 0 0 0 #2a2a2a; }
+        .b-pause  { background: #ffdce0; color: #2a2a2a; }
+        .b-resume { background: #d6f0d8; color: #2a2a2a; }
+        .b-stop   { background: #f0ece0; color: #2a2a2a; }
+
         @supports (-webkit-touch-callout: none) { body { height: -webkit-fill-available; } }
+
+        /* 맨위로 버튼 */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 72px; right: 16px;
+            width: 44px; height: 44px;
+            background: #2a2a2a; color: #fff9c2;
+            border: 2px solid #2a2a2a;
+            border-radius: 3px;
+            font-size: 20px; font-weight: 700;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #555;
+            z-index: 50;
+            display: none;
+            align-items: center; justify-content: center;
+            transition: all 0.12s;
+        }
+        #scrollTopBtn:active { transform: translate(3px,3px); box-shadow: 0 0 0 #555; }
+        #scrollTopBtn.visible { display: flex; }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
-    <button onclick="stopAndGoHome()">🏠</button>
+    <button onclick="stopAndGoHome()">🏠 홈</button>
     <div class="filename">📖 {{ filename }}</div>
     <button class="settings-btn" onclick="toggleSettings()">☰</button>
 </div>
@@ -176,7 +256,6 @@
         <button class="close-btn" onclick="toggleSettings()">✕</button>
     </div>
     <div class="s-content">
-        <!-- 음성 ON/OFF -->
         <div class="s-item">
             <label class="s-label">🔊 음성 지원</label>
             <div class="t-row">
@@ -184,87 +263,82 @@
                     <input type="checkbox" id="ttsSwitch" onchange="toggleTTS()">
                     <span class="t-sl"></span>
                 </label>
-                <span id="ttsLabel">OFF</span>
+                <span id="ttsLabel" style="font-family:'Caveat',cursive;font-size:16px;font-weight:700;">OFF</span>
             </div>
-            
-            <!-- 음성 속도 -->
             <div class="spd-wrap hidden" id="spdWrap">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <span style="font-size:14px;font-weight:500;">음성 속도</span>
-                    <span style="font-size:16px;font-weight:700;color:#007bff;" id="spdVal">1.2x</span>
+                    <span style="font-family:'Caveat',cursive;font-size:15px;font-weight:600;">음성 속도</span>
+                    <span style="font-family:'Caveat',cursive;font-size:18px;font-weight:700;color:#2a2a2a;" id="spdVal">1.2x</span>
                 </div>
                 <input type="range" class="spd-slider" id="spdSlider" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
                 <div class="spd-labels"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
             </div>
-            
-            <!-- 반복 설정 -->
             <div class="repeat-wrap hidden" id="repeatWrap">
-                <label class="s-label" style="margin-top:16px;">🔁 반복 재생</label>
+                <label class="s-label" style="margin-top:14px;">🔁 반복 재생</label>
                 <div class="repeat-options">
                     <div class="repeat-opt active" id="repOnce" onclick="setRepeat('once')">1회</div>
                     <div class="repeat-opt" id="repCount" onclick="setRepeat('count')">횟수</div>
                     <div class="repeat-opt" id="repInf" onclick="setRepeat('infinite')">무한</div>
                 </div>
                 <div class="repeat-count-wrap hidden" id="repCountWrap">
-                    <span style="font-size:14px;">반복 횟수:</span>
+                    <span style="font-family:'Caveat',cursive;font-size:15px;">반복 횟수:</span>
                     <input type="number" class="repeat-count-input" id="repCountInput" value="3" min="2" max="99" onchange="updateRepeatCount()">
-                    <span style="font-size:14px;">회</span>
+                    <span style="font-family:'Caveat',cursive;font-size:15px;">회</span>
                 </div>
                 <div class="repeat-status" id="repeatStatus">1회 재생</div>
             </div>
         </div>
-        
-        <!-- 대사 스크롤 속도 -->
         <div class="s-item">
-            <label class="s-label">대사 스크롤 속도</label>
+            <label class="s-label">⏱ 대사 속도</label>
             <span class="s-value" id="delayVal">0.5초</span>
             <div class="s-ctrl">
                 <button class="s-btn" onclick="chgDelay(-1);event.stopPropagation()">빠르게 -</button>
                 <button class="s-btn" onclick="chgDelay(1);event.stopPropagation()">느리게 +</button>
             </div>
-            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 0.2초 ~ 2.0초</div>
-            <div style="margin-top:4px;font-size:12px;color:#999;" id="delayNote"></div>
+            <div style="margin-top:6px;font-family:'Caveat',cursive;font-size:13px;color:#888;">0.2초 ~ 2.0초</div>
+            <div style="margin-top:4px;font-family:'Caveat',cursive;font-size:13px;color:#999;" id="delayNote"></div>
         </div>
-        
-        <!-- 폰트 크기 -->
         <div class="s-item">
-            <label class="s-label">폰트 크기</label>
+            <label class="s-label">🔤 폰트 크기</label>
             <span class="s-value" id="fontVal">18px</span>
             <div class="s-ctrl">
-                <button class="s-btn" onclick="chgFont(-2);event.stopPropagation()">A-</button>
+                <button class="s-btn" onclick="chgFont(-2);event.stopPropagation()">A−</button>
                 <button class="s-btn" onclick="chgFont(2);event.stopPropagation()">A+</button>
             </div>
-            <div style="margin-top:8px;font-size:12px;color:#666;">범위: 12px ~ 28px</div>
+            <div style="margin-top:6px;font-family:'Caveat',cursive;font-size:13px;color:#888;">12px ~ 28px</div>
         </div>
-        
-        <button class="s-btn" onclick="resetAll();event.stopPropagation()" style="width:100%;background:#fee500;margin-top:20px;">🔄 기본값 초기화</button>
+        <button class="s-btn" onclick="resetAll();event.stopPropagation()" style="width:100%;background:#fff9c2;border-color:#2a2a2a;margin-top:16px;">🔄 기본값 초기화</button>
     </div>
 </div>
 
-<!-- 모바일 자동재생 잠금 해제용 시작 오버레이 -->
+<!-- 모바일 자동재생 잠금 해제 오버레이 -->
 <div id="startOverlay" style="
     position:fixed;top:0;left:0;right:0;bottom:0;
-    background:rgba(0,0,0,0.7);z-index:300;
+    background:rgba(0,0,0,0.65);z-index:300;
     display:none;align-items:center;justify-content:center;
     flex-direction:column;gap:16px;
 ">
-    <div style="background:white;padding:36px 32px;border-radius:20px;text-align:center;max-width:320px;width:90%;">
-        <div style="font-size:48px;margin-bottom:12px;">🎭</div>
-        <div style="font-size:20px;font-weight:700;margin-bottom:8px;">전체 읽기 시작</div>
-        <div style="font-size:14px;color:#666;margin-bottom:24px;">버튼을 눌러 음성 재생을 시작하세요</div>
+    <div style="background:#fffef8;padding:32px;border:2.5px solid #2a2a2a;border-radius:3px;box-shadow:5px 5px 0 #2a2a2a;text-align:center;max-width:320px;width:90%;">
+        <div style="font-size:48px;margin-bottom:12px;">🐱</div>
+        <div style="font-family:'Caveat',cursive;font-size:24px;font-weight:700;margin-bottom:8px;">전체 읽기 시작</div>
+        <div style="font-family:'Caveat',cursive;font-size:15px;color:#666;margin-bottom:24px;">버튼을 눌러 음성 재생을 시작하세요</div>
         <button id="startBtn" style="
-            width:100%;padding:16px;border:none;border-radius:12px;
-            background:#007bff;color:white;font-size:18px;font-weight:700;
-            cursor:pointer;
-        ">▶️ 재생 시작</button>
+            width:100%;padding:14px;
+            border:2.5px solid #2a2a2a;border-radius:3px;
+            background:#2a2a2a;color:#fff9c2;
+            font-family:'Caveat',cursive;font-size:20px;font-weight:700;
+            cursor:pointer;box-shadow:3px 3px 0 #555;
+        ">▶ 재생 시작</button>
     </div>
 </div>
 
 <div id="chat-window"></div>
 
+<button id="scrollTopBtn" onclick="chat.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
 <div class="bottom-bar">
-    <button class="b-pause" id="pauseBtn" onclick="togglePause()">⏸️ 일시정지</button>
-    <button class="b-stop" onclick="stopAndGoHome()">⏹️ 중지</button>
+    <button class="b-pause" id="pauseBtn" onclick="togglePause()">⏸ 일시정지</button>
+    <button class="b-stop" onclick="stopAndGoHome()">⏹ 중지</button>
 </div>
 
 <script>
@@ -272,53 +346,42 @@
     const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
     let roleColors = {}; try { roleColors = JSON.parse('{{ colors | safe }}'); } catch(e) {}
     let roleGenders = {}; try { roleGenders = JSON.parse('{{ genders | safe }}'); } catch(e) {}
-    
+
     let ttsOn = '{{ tts_enabled }}' === 'true';
     let ttsSpd = parseFloat('{{ tts_speed }}') || 1.2;
     let fontSize = 18, msgDelay = 500;
     let paused = false, stopped = false, running = false;
-    
-    // 모바일 Audio 자동재생 해결: 단일 Audio 객체 재사용
+
     const sharedAudio = new Audio();
     let audioUnlocked = false;
-    
-    // 반복 설정
-    let repeatMode = 'once';   // 'once' | 'count' | 'infinite'
-    let repeatTotal = 3;       // 횟수 모드일 때 총 횟수
-    let currentRound = 1;      // 현재 라운드
-    
+
+    let repeatMode = 'once';
+    let repeatTotal = 3;
+    let currentRound = 1;
+
     const chat = document.getElementById('chat-window');
 
-    // ============================================
-    // 괄호 내 지문 제거 (TTS용)
-    // ============================================
     function stripParentheses(text) {
         if (!text) return '';
         return text.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
     }
 
-    // ============================================
-    // 설정 관리
-    // ============================================
     function loadSettings() {
         const sf = localStorage.getItem('smFont'); if (sf) fontSize = parseInt(sf);
         document.documentElement.style.setProperty('--font-size', fontSize + 'px');
         document.getElementById('fontVal').textContent = fontSize + 'px';
-        
         const sd = localStorage.getItem('smDelay'); if (sd) msgDelay = parseInt(sd);
         document.getElementById('delayVal').textContent = (msgDelay / 1000).toFixed(1) + '초';
-        
         document.getElementById('ttsSwitch').checked = ttsOn;
         updateTTSUI();
         document.getElementById('spdSlider').value = ttsSpd;
         document.getElementById('spdVal').textContent = ttsSpd.toFixed(1) + 'x';
     }
-    
+
     function toggleSettings() {
         document.getElementById('panel').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
     }
-    
     function chgDelay(d) {
         msgDelay += d * 100; msgDelay = Math.max(200, Math.min(2000, msgDelay));
         localStorage.setItem('smDelay', msgDelay);
@@ -341,13 +404,10 @@
         flash('fontVal'); flash('delayVal');
     }
     function flash(id) {
-        const el = document.getElementById(id); el.style.color = '#00aa00';
-        setTimeout(() => el.style.color = '#007bff', 300);
+        const el = document.getElementById(id); el.style.color = '#2a8a00';
+        setTimeout(() => el.style.color = '#2a2a2a', 300);
     }
 
-    // ============================================
-    // TTS 제어
-    // ============================================
     function toggleTTS() {
         ttsOn = document.getElementById('ttsSwitch').checked;
         updateTTSUI();
@@ -357,48 +417,35 @@
         document.getElementById('ttsLabel').textContent = ttsOn ? 'ON' : 'OFF';
         document.getElementById('spdWrap').classList.toggle('hidden', !ttsOn);
         document.getElementById('repeatWrap').classList.toggle('hidden', !ttsOn);
-        document.getElementById('delayNote').textContent = ttsOn ? '🔊 음성 모드 - 음성 완료 후 자동 진행' : '';
+        document.getElementById('delayNote').textContent = ttsOn ? '🔊 음성 완료 후 자동 진행' : '';
     }
     function updSpd(v) {
         ttsSpd = parseFloat(v);
         document.getElementById('spdVal').textContent = ttsSpd.toFixed(1) + 'x';
     }
-    
-    // 모바일 Audio unlock (사용자 터치 이벤트 내에서 호출)
+
     function unlockAudio() {
         sharedAudio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqSAAAAAAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQZB8P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
         sharedAudio.play().then(() => {
-            sharedAudio.pause();
-            sharedAudio.currentTime = 0;
-            audioUnlocked = true;
+            sharedAudio.pause(); sharedAudio.currentTime = 0; audioUnlocked = true;
         }).catch(() => {});
     }
-    
-    // TTS 재생 (괄호 제거, 단일 Audio 재사용)
+
     function speak(text, role) {
         return new Promise(resolve => {
             if (!ttsOn || !text?.trim()) { resolve(); return; }
-            
             const cleanText = stripParentheses(text);
             if (!cleanText) { resolve(); return; }
-            
             const gender = roleGenders[role] || 'female';
             const url = `/tts?text=${encodeURIComponent(cleanText)}&gender=${gender}&speed=${ttsSpd}`;
-            
-            // 이전 재생 중단
             sharedAudio.pause();
-            
             sharedAudio.onended = () => { sharedAudio.onended = null; sharedAudio.onerror = null; resolve(); };
             sharedAudio.onerror = () => { sharedAudio.onended = null; sharedAudio.onerror = null; resolve(); };
-            
             sharedAudio.src = url;
             sharedAudio.play().catch(() => { resolve(); });
         });
     }
 
-    // ============================================
-    // 반복 설정
-    // ============================================
     function setRepeat(mode) {
         repeatMode = mode;
         document.querySelectorAll('.repeat-opt').forEach(el => el.classList.remove('active'));
@@ -406,13 +453,11 @@
         document.getElementById('repCountWrap').classList.toggle('hidden', mode !== 'count');
         updateRepeatStatus();
     }
-    
     function updateRepeatCount() {
         repeatTotal = parseInt(document.getElementById('repCountInput').value) || 3;
         if (repeatTotal < 1) repeatTotal = 1;
         updateRepeatStatus();
     }
-    
     function updateRepeatStatus() {
         const status = document.getElementById('repeatStatus');
         if (repeatMode === 'once') status.textContent = '1회 재생';
@@ -420,19 +465,18 @@
         else status.textContent = `무한 반복 (현재: ${currentRound}회차)`;
     }
 
-    // ============================================
-    // 메시지 & 일시정지
-    // ============================================
+    // ★ 말풍선 넘버링 - 검은 뱃지
     function addMsg(text, type, role, idx) {
         const div = document.createElement('div');
         div.className = `msg ${type} animate`;
         if (roleColors[role] && type !== 'action') div.style.background = roleColors[role];
-        div.innerHTML = `<span class="role-label">[${idx}] ${role}</span>${text}`;
+        const numBadge = idx ? `<span class="num">${idx}</span>` : '';
+        div.innerHTML = `<span class="role-label">${numBadge}${role}</span>${text}`;
         chat.appendChild(div);
         chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
         return div;
     }
-    
+
     function addRoundDivider(round) {
         const div = document.createElement('div');
         div.className = 'round-divider';
@@ -440,7 +484,7 @@
         chat.appendChild(div);
         chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
     }
-    
+
     function waitPause() {
         return new Promise(resolve => {
             if (!paused) { resolve(); return; }
@@ -449,110 +493,86 @@
             }, 100);
         });
     }
-    
+
     function togglePause() {
         paused = !paused;
         const btn = document.getElementById('pauseBtn');
         if (paused) {
-            btn.textContent = '▶️ 재개'; btn.className = 'b-resume';
+            btn.textContent = '▶ 재개'; btn.className = 'b-resume';
             sharedAudio.pause();
         } else {
-            btn.textContent = '⏸️ 일시정지'; btn.className = 'b-pause';
+            btn.textContent = '⏸ 일시정지'; btn.className = 'b-pause';
             if (ttsOn && sharedAudio.src) sharedAudio.play().catch(()=>{});
         }
     }
-    
+
     function stopAndGoHome() {
         stopped = true;
         sharedAudio.pause();
         location.href = '/';
     }
 
-    // ============================================
-    // 1회 재생
-    // ============================================
     async function playOnce() {
         for (let i = 0; i < scriptData.length; i++) {
             if (stopped) return false;
             await waitPause();
             if (stopped) return false;
-            
             const item = scriptData[i];
             const isMyRole = myRoles.some(r => item.role.includes(r));
             const type = item.role === "(지문)" ? "action" : isMyRole ? "user" : "bot";
-            
             const el = addMsg(item.text, type, item.role, item.idx);
-            
-            // (지문)은 TTS 안 읽음, 일반 대사만 읽음
             if (ttsOn && item.role !== "(지문)" && item.text.trim()) {
                 el.classList.add('speaking');
                 await speak(item.text, item.role);
                 el.classList.remove('speaking');
                 await new Promise(r => setTimeout(r, 150));
-            } else {
+            } else if (ttsOn) {
                 await new Promise(r => setTimeout(r, msgDelay));
             }
+            // ttsOn이 false면 딜레이 없이 즉시 다음으로
         }
-        return true; // 정상 완료
+        return true;
     }
 
-    // ============================================
-    // 메인 실행 (반복 포함)
-    // ============================================
     async function run() {
         if (running) return;
         running = true;
         currentRound = 1;
         updateRepeatStatus();
-        
         while (!stopped) {
-            // 2회차부터 구분선
             if (currentRound > 1) {
                 addRoundDivider(currentRound);
-                // 라운드 간 잠시 대기
                 await new Promise(r => setTimeout(r, 1000));
             }
-            
             const completed = await playOnce();
             if (!completed || stopped) break;
-            
-            // 반복 체크
             if (repeatMode === 'once') {
-                break; // 1회만
+                break;
             } else if (repeatMode === 'count') {
                 if (currentRound >= repeatTotal) break;
-                currentRound++;
-                updateRepeatStatus();
-                // 채팅창 정리 (이전 내용 유지하되 스크롤만)
+                currentRound++; updateRepeatStatus();
             } else {
-                // 무한 반복
-                currentRound++;
-                updateRepeatStatus();
+                currentRound++; updateRepeatStatus();
             }
         }
-        
-        // 완료 메시지
         if (!stopped) {
             const endDiv = document.createElement('div');
             endDiv.className = 'msg action animate';
-            if (repeatMode === 'once') {
-                endDiv.innerHTML = '🎉 전체 보기 완료!';
-            } else {
-                endDiv.innerHTML = `🎉 ${currentRound}회 반복 완료!`;
-            }
+            endDiv.innerHTML = repeatMode === 'once' ? '🎉 전체 보기 완료!' : `🎉 ${currentRound}회 반복 완료!`;
             chat.appendChild(endDiv);
             chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
         }
-        
         running = false;
     }
 
-    // ============================================
-    // 시작
-    // ============================================
     loadSettings();
-    
-    // TTS ON이면 모바일 unlock 위해 시작 오버레이 표시
+
+    // 맨위로 버튼 - 스크롤 내려가면 표시
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    chat.addEventListener('scroll', () => {
+        scrollTopBtn.classList.toggle('visible', chat.scrollTop > 200);
+    });
+
     if (ttsOn) {
         const overlay = document.getElementById('startOverlay');
         overlay.style.display = 'flex';
@@ -564,7 +584,7 @@
     } else {
         run();
     }
-    
+
     if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
         window.location.href = '/';
     }
