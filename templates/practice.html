@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -264,8 +264,8 @@
                     <span style="font-family:'Caveat',cursive;font-size:15px;font-weight:600;">음성 속도</span>
                     <span style="font-family:'Caveat',cursive;font-size:18px;font-weight:700;color:#2a2a2a;" id="spdV">1.2x</span>
                 </div>
-                <input type="range" class="ss" id="spdS" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
-                <div class="srl"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
+                <input type="range" class="ss" id="spdSl" min="0.5" max="2.0" step="0.1" value="1.2" oninput="uSpd(this.value)">
+                <div class="sr"><span>0.5x</span><span>2.0x</span></div>
             </div>
         </div>
         <div class="si">
@@ -291,16 +291,16 @@
     </div>
 </div>
 
-<div id="chat-window"></div>
+<div id="chat"></div>
 
-<div class="input-area">
+<div class="inp-area">
     <div class="iw">
         <textarea id="inp" placeholder="대사 입력 (숫자: 해당 번호로 이동)"></textarea>
         <button class="xb" id="xBtn" onclick="clr()">✕</button>
     </div>
     <div class="bc">
         <button class="sendb" onclick="handleInput()">전송</button>
-        <button class="nextb" onclick="skip()">다음</button>
+        <button class="nextb" onclick="skip()">다음 →</button>
     </div>
 </div>
 

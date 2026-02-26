@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -270,8 +270,8 @@
                     <span style="font-family:'Caveat',cursive;font-size:15px;font-weight:600;">음성 속도</span>
                     <span style="font-family:'Caveat',cursive;font-size:18px;font-weight:700;color:#2a2a2a;" id="spdVal">1.2x</span>
                 </div>
-                <input type="range" class="spd-slider" id="spdSlider" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
-                <div class="spd-labels"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
+                <input type="range" class="ss" id="spdSl" min="0.5" max="2.0" step="0.1" value="1.2" oninput="uSpd(this.value)">
+                <div class="sr"><span>0.5x</span><span>2.0x</span></div>
             </div>
             <div class="repeat-wrap hidden" id="repeatWrap">
                 <label class="s-label" style="margin-top:14px;">🔁 반복 재생</label>
@@ -285,7 +285,7 @@
                     <input type="number" class="repeat-count-input" id="repCountInput" value="3" min="2" max="99" onchange="updateRepeatCount()">
                     <span style="font-family:'Caveat',cursive;font-size:15px;">회</span>
                 </div>
-                <div class="repeat-status" id="repeatStatus">1회 재생</div>
+                <div class="rst" id="rSt">1회 재생</div>
             </div>
         </div>
         <div class="s-item">
