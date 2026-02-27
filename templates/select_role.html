@@ -234,7 +234,6 @@
                     여성: <span>SunHi</span> · 남성: <span>InJoon</span> — 배역별 성별 선택 가능
                 </div>
             </div>
-            {% endfor %}
         </div>
 
         <form action="/practice" method="post" id="roleForm">
@@ -357,6 +356,15 @@
         document.getElementById('colorsInput').value = JSON.stringify(roleColors);
         document.getElementById('gendersInput').value = JSON.stringify(roleGenders);
         toggleTTS();
+
+        // form submit 직전 최종 동기화
+        document.getElementById('roleForm').addEventListener('submit', function() {
+            const enabled = document.getElementById('ttsToggle').checked;
+            document.getElementById('ttsEnabledInput').value = String(enabled);
+            document.getElementById('ttsSpeedInput').value = document.getElementById('ttsSpeedSlider').value;
+            document.getElementById('colorsInput').value = JSON.stringify(roleColors);
+            document.getElementById('gendersInput').value = JSON.stringify(roleGenders);
+        });
     </script>
 </body>
 </html>

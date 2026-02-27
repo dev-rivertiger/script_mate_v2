@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -241,6 +241,8 @@
     </style>
 </head>
 <body>
+<script type="application/json" id="_sd">{{ script | tojson }}</script>
+<script type="application/json" id="_mr">{{ my_roles | tojson }}</script>
 
 <div class="top-bar">
     <button onclick="stopAndGoHome()">🏠 홈</button>
@@ -270,8 +272,8 @@
                     <span style="font-family:'Caveat',cursive;font-size:15px;font-weight:600;">음성 속도</span>
                     <span style="font-family:'Caveat',cursive;font-size:18px;font-weight:700;color:#2a2a2a;" id="spdVal">1.2x</span>
                 </div>
-                <input type="range" class="ss" id="spdSl" min="0.5" max="2.0" step="0.1" value="1.2" oninput="uSpd(this.value)">
-                <div class="sr"><span>0.5x</span><span>2.0x</span></div>
+                <input type="range" class="spd-slider" id="spdSlider" min="0.5" max="2.0" step="0.1" value="1.2" oninput="updSpd(this.value)">
+                <div class="spd-labels"><span>느리게 0.5x</span><span>빠르게 2.0x</span></div>
             </div>
             <div class="repeat-wrap hidden" id="repeatWrap">
                 <label class="s-label" style="margin-top:14px;">🔁 반복 재생</label>
@@ -285,7 +287,7 @@
                     <input type="number" class="repeat-count-input" id="repCountInput" value="3" min="2" max="99" onchange="updateRepeatCount()">
                     <span style="font-family:'Caveat',cursive;font-size:15px;">회</span>
                 </div>
-                <div class="rst" id="rSt">1회 재생</div>
+                <div class="repeat-status" id="repeatStatus">1회 재생</div>
             </div>
         </div>
         <div class="s-item">
@@ -342,13 +344,14 @@
 </div>
 
 <script>
-    const scriptData = JSON.parse('{{ script | tojson | safe }}');
-    const myRoles = JSON.parse('{{ my_roles | tojson | safe }}');
+    const scriptData = JSON.parse(document.getElementById("_sd").textContent);
+    const myRoles = JSON.parse(document.getElementById("_mr").textContent);
     let roleColors = {}; try { roleColors = JSON.parse('{{ colors | safe }}'); } catch(e) {}
     let roleGenders = {}; try { roleGenders = JSON.parse('{{ genders | safe }}'); } catch(e) {}
 
-    let ttsOn = '{{ tts_enabled }}' === 'true';
+    let ttsOn = ('{{ tts_enabled }}').trim().toLowerCase() === 'true';
     let ttsSpd = parseFloat('{{ tts_speed }}') || 1.2;
+    console.log('🔊 [view] tts_enabled raw:', '{{ tts_enabled }}', '→ ttsOn:', ttsOn, '/ ttsSpd:', ttsSpd);
     let fontSize = 18, msgDelay = 500;
     let paused = false, stopped = false, running = false;
 
@@ -466,14 +469,14 @@
     }
 
     // ★ 말풍선 넘버링 - 검은 뱃지
-    function addMsg(text, type, role, idx) {
+    function addMsg(text, type, role, idx, autoScroll = true) {
         const div = document.createElement('div');
         div.className = `msg ${type} animate`;
         if (roleColors[role] && type !== 'action') div.style.background = roleColors[role];
         const numBadge = idx ? `<span class="num">${idx}</span>` : '';
         div.innerHTML = `<span class="role-label">${numBadge}${role}</span>${text}`;
         chat.appendChild(div);
-        chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+        if (autoScroll) chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
         return div;
     }
 
@@ -513,6 +516,26 @@
     }
 
     async function playOnce() {
+        // ── TTS OFF: 전체 즉시 렌더링, 자동스크롤 없음 ──
+        if (!ttsOn) {
+            for (let i = 0; i < scriptData.length; i++) {
+                const item = scriptData[i];
+                const isMyRole = myRoles.some(r => item.role.includes(r));
+                const type = item.role === "(지문)" ? "action" : isMyRole ? "user" : "bot";
+                const div = document.createElement('div');
+                div.className = `msg ${type}`;
+                div.style.opacity = '1';
+                div.style.transform = 'none';
+                if (roleColors[item.role] && type !== 'action') div.style.background = roleColors[item.role];
+                const numBadge = item.idx ? `<span class="num">${item.idx}</span>` : '';
+                div.innerHTML = `<span class="role-label">${numBadge}${item.role}</span>${item.text}`;
+                chat.appendChild(div);
+            }
+            running = false;
+            return false;
+        }
+
+        // ── TTS ON: 순차 재생 ──
         for (let i = 0; i < scriptData.length; i++) {
             if (stopped) return false;
             await waitPause();
@@ -521,15 +544,14 @@
             const isMyRole = myRoles.some(r => item.role.includes(r));
             const type = item.role === "(지문)" ? "action" : isMyRole ? "user" : "bot";
             const el = addMsg(item.text, type, item.role, item.idx);
-            if (ttsOn && item.role !== "(지문)" && item.text.trim()) {
+            if (item.role !== "(지문)" && item.text.trim()) {
                 el.classList.add('speaking');
                 await speak(item.text, item.role);
                 el.classList.remove('speaking');
                 await new Promise(r => setTimeout(r, 150));
-            } else if (ttsOn) {
+            } else {
                 await new Promise(r => setTimeout(r, msgDelay));
             }
-            // ttsOn이 false면 딜레이 없이 즉시 다음으로
         }
         return true;
     }
@@ -555,7 +577,7 @@
                 currentRound++; updateRepeatStatus();
             }
         }
-        if (!stopped) {
+        if (!stopped && ttsOn) {
             const endDiv = document.createElement('div');
             endDiv.className = 'msg action animate';
             endDiv.innerHTML = repeatMode === 'once' ? '🎉 전체 보기 완료!' : `🎉 ${currentRound}회 반복 완료!`;
@@ -582,6 +604,9 @@
             run();
         });
     } else {
+        // TTS OFF: 일시정지 버튼 숨기고 즉시 렌더링
+        document.getElementById('pauseBtn').style.display = 'none';
+        scrollTopBtn.classList.add('visible');
         run();
     }
 
